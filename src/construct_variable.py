@@ -76,22 +76,8 @@ def construct_variable_1d(fname,fname_keys,varname,time_1,time_2,lat_min,lat_max
 	# Read variable (assumes it is a 4D variable)
 	t, z, lon, lat, var = read_variable_4d(fname,varread)
 
-	# Select which method to use to post process variable
-	if plot_type=='dayside_average':
-		# Compute dayside average
-		lat_min = -90.
-		lat_max = 90.
-		lon_min = 90.
-		lon_max = 270.
-		y, var = area_average(fname,varname,t,z,lat,lon,var,time_1,lat_min,lat_max,lon_min,lon_max,plot_type,pressure_grid)
-	elif plot_type=='north_hemisphere':
-		# Compute north hemisphere average
-		lat_min = 0.
-		lat_max = 90.
-		lon_min = 0.
-		lon_max = 360.
-		y, var = area_average(fname,varname,t,z,lat,lon,var,time_1,lat_min,lat_max,lon_min,lon_max,plot_type,pressure_grid)
-	elif plot_type=='area_average':
+	# Select which method to use to post process variabl
+	if plot_type=='area_average' or plot_type=='dayside_average' or plot_type=='nightside_average':
 		y, var = area_average(fname,varname,t,z,lat,lon,var,time_1,lat_min,lat_max,lon_min,lon_max,plot_type,pressure_grid)
 	elif plot_type=='column':
 		y, var = extract_column(fname,varname,t,z,lat,lon,var,time_1,lat_min,lon_min,plot_type,pressure_grid)
@@ -390,33 +376,49 @@ def extract_column(fname,varname,t,z,lat,lon,var,time_min,lat_request,lon_reques
 # Hemisphere average
 def area_average(fname,varname,time_var,height_var,lat_var,lon_var,var,time,lat_min,lat_max,lon_min,lon_max,plot_type,pressure_grid):
 
-  if verbose:
-    print 'Getting spatial temporal average'
-    print '  time: ',time
-    print '  lat_min:  ', lat_min
-    print '  lat_max:  ', lat_max
-    print '  lon_min:  ', lon_min
-    print ' lon_max:   ', lon_max
-  
-  # Interpolate in P grid 
-  if pressure_grid:  
-    vert_coord, lat, lon, var = interpolate_on_p_profile(time_var,height_var,lat_var,lon_var,var,time,fname)
-  else:
-    vert_coord = height_var
-    
-  
-  # Compute latitude mean
-  index = array(where((lat>=lat_min) & (lat<=lat_max))).flatten()
-  var = spatial_mean_weight_lim(lat,var[:,index,:],weights=cos(radians(lat[index])),axis=1)
+	if verbose:
+		print 'Getting spatial temporal average'
+		print '  time: ',time
+		if plot_type=='dayside_average':
+			print 'dayside average'
+		elif plot_type=='nightside_average':
+			print 'nightside average'
+		else:
+			print '  lat_min:  ', lat_min
+			print '  lat_max:  ', lat_max
+			print '  lon_min:  ', lon_min
+			print ' lon_max:   ', lon_max
 
-  # Compute zonal mean
-  index =  array(where((lon>=lon_min) & (lon<=lon_max))).flatten()
-  var = mean(var[:,index],axis=1)
-  
-  # Post process variable
-  var = post_process_control(varname,var,vert_coord,plot_type)
-  
-  return p, var
+	# Interpolate in P grid 
+	if pressure_grid:  
+		vert_coord, lat, lon, var = interpolate_on_p_profile(time_var,height_var,lat_var,lon_var,var,time,fname)
+	else:
+		vert_coord = height_var
+
+	if plot_type=='dayside_average':
+		coslon = cos(radians(lon_var))
+		coslat = cos(radians(lat_var))
+		index_lon = array(where((coslon<0.))).flatten()
+		index_lat = array(where((coslat>0.))).flatten()
+	elif plot_type=='nightside_average':
+		coslon = cos(radians(lon_var))
+		coslat = cos(radians(lat_var))
+		index_lon = array(where((coslon>0.))).flatten()
+		index_lat = array(where((coslat>0.))).flatten()
+	else:
+		index_lon = array(where((lon>=lon_min) & (lon<=lon_max))).flatten()
+		index_lat = array(where((lat>=lat_min) & (lat<=lat_max))).flatten()
+
+	# Compute latitude mean
+	var = spatial_mean_weight_lim(lat,var[:,index_lat,:],weights=cos(radians(lat[index_lat])),axis=1)
+
+	# Compute longitude mean
+	var = mean(var[:,index_lon],axis=1)
+
+	# Post process variable
+	var = post_process_control(varname,var,vert_coord,plot_type)
+
+	return vert_coord, var
   
 # Create multiple columns
 def extract_column_multi(fname,varname,time_var,height_var,lat_var,lon_var,var,time_1,time_2,lat_request,lon_request,plot_type,pressure_grid):
