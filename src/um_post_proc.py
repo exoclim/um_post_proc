@@ -60,9 +60,9 @@ def get_variable_multi_1d(save_dir,fname,fname_keys,fname_save,varname,read_save
 def get_wind_vectors(save_dir,fname,fname_keys,fname_save,varname,read_saved_var,save_var,time_1,time_2,lon,lat_min,lat_max,plevel,plot_type,pressure_grid):
 
   # Read wind vectors
-  if plot_type=='latitude_longitude':
-    x1, y1, u = get_variable_2d(save_dir,fname,fname_keys,fname_save,'u',read_saved_var,save_var,time_1,time_2,lon,lat_min,lat_max,plevel,plot_type,pressure_grid)
-    x2, y2, v = get_variable_2d(save_dir,fname,fname_keys,fname_save,'v',read_saved_var,save_var,time_1,time_2,lon,lat_min,lat_max,plevel,plot_type,pressure_grid)
+  if plot_type=='latitude_longitude' or plot_type=='surface':
+    x1, y1, u = get_variable_2d(save_dir,fname,fname_keys,fname_save,'u',read_saved_var,save_var,time_1,time_2,lon,lat_min,lat_max,plevel,'latitude_longitude',pressure_grid)
+    x2, y2, v = get_variable_2d(save_dir,fname,fname_keys,fname_save,'v',read_saved_var,save_var,time_1,time_2,lon,lat_min,lat_max,plevel,'latitude_longitude',pressure_grid)
     ynew = linspace(amin(y1),amax(y1),12)
 
   elif plot_type=='meridional_mean' or plot_type=='meridional_temporal_mean':

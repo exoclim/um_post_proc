@@ -233,7 +233,8 @@ def latitude_longitude_slice(fname,varname,time_var,height_var,lat_var,lon_var,v
 
   # Interpolate variable onto requested pressure point at requested time
   if pressure_grid:
-    lat, lon, var = interpolate_on_p_point(time_var,height_var,lat_var,lon_var,var,time_1,level,fname)
+    lat, lon, var_at_level = interpolate_on_p_point(time_var,height_var,lat_var,lon_var,var,time_1,level,fname)
+    vert_coord = level
   else:
     lat = lat_var 
     lon = lon_var
@@ -243,13 +244,13 @@ def latitude_longitude_slice(fname,varname,time_var,height_var,lat_var,lon_var,v
     var = var[index,:,:,:]
     
     # Get variable on requested altitude point 
-    var_at_height = np.zeros((lat_var.size,lon_var.size))
+    var_at_level = np.zeros((lat_var.size,lon_var.size))
     for ilat in range(lat_var.size):
       for ilon in range(lon_var.size):
-        var_at_height[ilat,ilon] = linear_interp_1d(height_var,level,var[:,ilat,ilon])
+        var_at_level[ilat,ilon] = linear_interp_1d(height_var,level,var[:,ilat,ilon])
 
   # Post process variable
-  var = post_process_control(varname,var_at_height,vert_coord,plot_type)
+  var = post_process_control(varname,var_at_level,vert_coord,plot_type)
 
   if verbose:
     print 'Constructed pressure slice of variable ', varname,' min value: ', amin(var), ' max value: ', amax(var)
