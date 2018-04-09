@@ -68,6 +68,11 @@ def post_process_control(varname,var,p,plot_type):
     if verbose:
       print 'Requested variable is temperature'
       # Don't need to do anything foz sonal wind
+  # surface temperature
+  elif varname=='surface_temp':
+    if verbose:
+      print 'Requested variable is surface temperature'
+      # Don't need to do anything foz sonal wind
   # u component of dynamical timecal
   elif varname=='u_timescale':
     if verbose:

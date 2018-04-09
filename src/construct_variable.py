@@ -62,7 +62,10 @@ def construct_variable_2d(fname,fname_keys,fname_spec,varname,time_1,time_2,lon_
 	# Surface variable (i.e. one vertical level)
 	elif plot_type=='surface':
 		x, y, var = surface(fname,varname,t,z,lat,lon,var,time_1,plot_type)
-
+		
+	# Surface variable temporal mean (i.e. one vertical level)
+	elif plot_type=='surface_temporal_mean':
+		x, y, var = surface_temporal_mean(fname,varname,t,z,lat,lon,var,time_1,time_2,plot_type)
 
 	else:
 		print 'Error: get_variable_2d'
@@ -84,6 +87,8 @@ def construct_variable_1d(fname,fname_keys,varname,time_1,time_2,lat_min,lat_max
 	# Select which method to use to post process variabl
 	if plot_type=='area_average' or plot_type=='dayside_average' or plot_type=='nightside_average':
 		y, var = area_average(fname,varname,t,z,lat,lon,var,time_1,lat_min,lat_max,lon_min,lon_max,plot_type,pressure_grid)
+	elif plot_type=='dayside_average_temporal_mean' or plot_type=='nightside_average_temporal_mean':
+		y, var = area_average_temporal_mean(fname,varname,t,z,lat,lon,var,time_1,time_2,lat_min,lat_max,lon_min,lon_max,plot_type,pressure_grid)
 	elif plot_type=='column':
 		y, var = extract_column(fname,varname,t,z,lat,lon,var,time_1,lat_min,lon_min,plot_type,pressure_grid)
 	else:
@@ -332,9 +337,29 @@ def surface(fname,varname,time_var,height_var,lat_var,lon_var,var,time_1,plot_ty
   if verbose:
     print 'Calculating surface variable'
     print ' time: ',time_var[itime]
-    
   
-    
+  pdummy = 1.0 # Not read in pressure, pass dummy argument 
+  # Post process
+  var = post_process_control(varname,var,pdummy,plot_type)
+  
+  print lon_var.shape
+  print lat_var.shape
+  print var.shape
+  
+  return lon_var,lat_var, var
+  
+# Get variable defined at surface
+def surface_temporal_mean(fname,varname,time_var,height_var,lat_var,lon_var,var,time_1,time_2,plot_type):
+
+  # Interpolate to get variable at requested time
+  itime_1 = argmin(abs(time_var-time_1))
+  itime_2 = argmin(abs(time_var-time_2))
+  
+  var = mean_var(var[itime_1:itime_2,0,:,:],axis=0)
+
+  if verbose:
+    print 'Calculating surface variable'
+    print ' temporal mean: ',time_var[itime_1],time_var[itime_2]
   
   pdummy = 1.0 # Not read in pressure, pass dummy argument 
   # Post process
@@ -424,7 +449,61 @@ def area_average(fname,varname,time_var,height_var,lat_var,lon_var,var,time,lat_
 	var = post_process_control(varname,var,vert_coord,plot_type)
 
 	return vert_coord, var
-  
+
+# Hemisphere average
+def area_average_temporal_mean(fname,varname,time_var,height_var,lat_var,lon_var,var,time_1,time_2,lat_min,lat_max,lon_min,lon_max,plot_type,pressure_grid):
+
+	# Get indices for temporal mean
+	itime_1 = argmin(abs(time_var-time_1))
+	itime_2 = argmin(abs(time_var-time_2))
+
+	if verbose:
+		print 'Getting spatial temporal average'
+		print '  temporal mean: ',time_var[itime_1],time_var[itime_2]
+		if plot_type=='dayside_average':
+			print 'dayside average'
+		elif plot_type=='nightside_average':
+			print 'nightside average'
+		else:
+			print '  lat_min:  ', lat_min
+			print '  lat_max:  ', lat_max
+			print '  lon_min:  ', lon_min
+			print ' lon_max:   ', lon_max
+
+	# Interpolate in P grid 
+	if pressure_grid:  
+		vert_coord, lat, lon, var = interpolate_on_p_profile_time(time_var,height_var,lat_var,lon_var,var,time_1,time_2,fname)
+	else:
+		vert_coord = height_var
+
+	if plot_type=='dayside_average_temporal_mean':
+		coslon = cos(radians(lon_var))
+		coslat = cos(radians(lat_var))
+		index_lon = array(where((coslon<0.))).flatten()
+		index_lat = array(where((coslat>0.))).flatten()
+	elif plot_type=='nightside_average_temporal_mean':
+		coslon = cos(radians(lon_var))
+		coslat = cos(radians(lat_var))
+		index_lon = array(where((coslon>0.))).flatten()
+		index_lat = array(where((coslat>0.))).flatten()
+	else:
+		index_lon = array(where((lon>=lon_min) & (lon<=lon_max))).flatten()
+		index_lat = array(where((lat>=lat_min) & (lat<=lat_max))).flatten()
+
+	# Compute temporal mean
+	var = mean_var(var,axis=0)
+
+	# Compute latitude mean
+	var = spatial_mean_weight_lim(lat,var[:,index_lat,:],weights=cos(radians(lat[index_lat])),axis=1)
+
+	# Compute longitude mean
+	var = mean(var[:,index_lon],axis=1)
+
+	# Post process variable
+	var = post_process_control(varname,var,vert_coord,plot_type)
+
+	return vert_coord, var
+
 # Create multiple columns
 def extract_column_multi(fname,varname,time_var,height_var,lat_var,lon_var,var,time_1,time_2,lat_request,lon_request,plot_type,pressure_grid):
 

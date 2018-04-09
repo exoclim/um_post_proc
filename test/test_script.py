@@ -67,6 +67,19 @@ plot_um_2d(fname=fname,fname_keys=fname_keys,varname='temp',plot_type='latitude_
   
 clf()
   
+# Surface Temperature
+plot_um_2d(fname=fname,fname_keys=fname_keys,varname='surface_temp',plot_type='surface',
+  time_1=time_1,level=1e4,
+  cmap='coolwarm',cbar_type='',cbar_label='Temperature [K]',
+  contours=True,ncont=5,
+  smooth=True,smooth_factor=2,
+  wind_vectors=True,
+  showfig=showfig,save_fig=save_fig,read_saved_var=read_saved_var,save_ext=save_ext,save_var=save_var,save_dir=save_dir,
+  fname_save='temperature_surface')
+
+clf()
+
+
 # ####################
 # 1d profile
 # ####################
@@ -94,8 +107,8 @@ plot_um_multi_1d(fname=fname,fname_keys=fname_keys,varname='ch4_mole_fraction',p
   fname_save='ch4_equator_altitude')
 clf()
 #Dayside and nightside average temperature
-plot_um_1d(fname=fname,fname_keys=fname_keys,varname='temp',plot_type='dayside_average',
-  time_1 = 1000.,
+plot_um_1d(fname=fname,fname_keys=fname_keys,varname='temp',plot_type='dayside_average_temporal_mean',
+  time_1 = time_1, time_2=time_2,
   color='red',
   log_y=True,xlab='Temperature',
   showfig=showfig,save_fig=False,save_var=save_var,read_saved_var=read_saved_var,save_ext=save_ext,save_dir=save_dir,
