@@ -85,7 +85,11 @@ def post_process_control(varname,var,p,plot_type):
     if verbose:
       print 'Requested variable is Cooper and Showman 2006 chemical timescale'
     var = calc_cs2006_ts(var,p,plot_type)
-  
+  elif varname=='cf':
+    if verbose:
+      print 'Requested variable is contribution function'
+    var = calc_cf(var)
+
   else:
     print 'Error: post_process_control'
     print '  variable not defined'
@@ -223,7 +227,17 @@ def calc_cs2006_ts(var,p,plot_type):
   
   return var
   
-  
+# Calculate contribution function
+def calc_cf(var):
 
+  # Assume pressure is first dimension
+  dims = var.shape
+  norm_cf = zeros(dims)
+
+  for i in range(dims[1]):
+    norm_cf[:,i] = var[:,i]/amax(var[:,i]) 
+
+  return norm_cf
+  
 
 

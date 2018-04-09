@@ -1,5 +1,7 @@
 from um_post_proc import *
 from pylab import *
+import os
+import shutil
 
 # Set standard variables
 fname = 'test_data/test_data.nc'
@@ -16,6 +18,11 @@ save_ext = '.pdf'
 time = 1000.
 time_1 = 990.
 time_2 = 1000.
+
+
+# Empty output directory
+shutil.rmtree('test_output')
+os.mkdir('test_output')
 
 # ####################
 # zonal tempoeral mean

@@ -354,7 +354,7 @@ def check_variable_pressure_grid(ntime,nlon,nlat,nheight,time_var,height_var,lon
 	elif (time_p!=time_var).any():
 		print 'Error: interpolate_on_p_profile_tlim'
 		print 'pressure and variable have same number of time points but grids do not match'
-		sys.exit()
+		#sys.exit()
 
 	# Check longitude
 	if lon_p.size!=lon_var.size:

@@ -5,16 +5,21 @@ from post_process_calculations import *
 from variable_defs import *
 from pylab import *
 
+from spectral import *
 
 # Control function 2D plots
-def construct_variable_2d(fname,fname_keys,varname,time_1,time_2,lon_request,lat_min,lat_max,level,plot_type,pressure_grid):
+def construct_variable_2d(fname,fname_keys,fname_spec,varname,time_1,time_2,lon_request,lat_min,lat_max,level,plot_type,pressure_grid,vardim,instrument):
 
 	# Get which variable to read from netcdf file
 	#varread = get_variable_to_read(varname)
 	varread = read_netcdf_keys(fname_keys,varname)
 
 	# Read variable (assumes it is a 4D variable)
-	t, z, lon, lat, var = read_variable_4d(fname,varread)
+        if vardim == 4:
+	  t, z, lon, lat, var = read_variable_4d(fname,varread)
+        else:
+          t, z, lon, lat, band, var = read_variable_5d(fname,varread)
+          var = process_spectral(t,z,lat,lon,band,var,fname_spec,instrument)
 
 	# Select which method to use to post process variable
 	# Compute a zonal temporal mean

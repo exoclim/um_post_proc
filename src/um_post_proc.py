@@ -8,7 +8,7 @@ import matplotlib.colors as colors
 import os
 
 # Function to read or calculate requested 2d variable
-def get_variable_2d(save_dir,fname,fname_keys,fname_save,varname,read_saved_var,save_var,time_1,time_2,lon,lat_min,lat_max,plevel,plot_type,pressure_grid):
+def get_variable_2d(save_dir,fname,fname_keys,fname_spec,fname_save,varname,read_saved_var,save_var,time_1,time_2,lon,lat_min,lat_max,plevel,plot_type,pressure_grid,vardim,instrument):
 
 	# Read variable from saved file
 	if read_saved_var and os.path.isfile(save_dir+'saved_vars/'+fname_save+'_'+varname):
@@ -16,7 +16,7 @@ def get_variable_2d(save_dir,fname,fname_keys,fname_save,varname,read_saved_var,
 
 	else:
 		# Construct variable
-		x, y, var = construct_variable_2d(fname,fname_keys,varname,time_1,time_2,lon,lat_min,lat_max,plevel,plot_type,pressure_grid)
+		x, y, var = construct_variable_2d(fname,fname_keys,fname_spec,varname,time_1,time_2,lon,lat_min,lat_max,plevel,plot_type,pressure_grid,vardim,instrument)
 	
 		# Save variable
 		if save_var:
@@ -57,21 +57,21 @@ def get_variable_multi_1d(save_dir,fname,fname_keys,fname_save,varname,read_save
 	
 	return nlat, nlon, y, var
 
-def get_wind_vectors(save_dir,fname,fname_keys,fname_save,varname,read_saved_var,save_var,time_1,time_2,lon,lat_min,lat_max,plevel,plot_type,pressure_grid):
+def get_wind_vectors(save_dir,fname,fname_keys,fname_spec,fname_save,varname,read_saved_var,save_var,time_1,time_2,lon,lat_min,lat_max,plevel,plot_type,pressure_grid,vardim,instrument):
 
   # Read wind vectors
   if plot_type=='latitude_longitude' or plot_type=='surface':
-    x1, y1, u = get_variable_2d(save_dir,fname,fname_keys,fname_save,'u',read_saved_var,save_var,time_1,time_2,lon,lat_min,lat_max,plevel,'latitude_longitude',pressure_grid)
-    x2, y2, v = get_variable_2d(save_dir,fname,fname_keys,fname_save,'v',read_saved_var,save_var,time_1,time_2,lon,lat_min,lat_max,plevel,'latitude_longitude',pressure_grid)
+    x1, y1, u = get_variable_2d(save_dir,fname,fname_keys,fname_spec,fname_save,'u',read_saved_var,save_var,time_1,time_2,lon,lat_min,lat_max,plevel,'latitude_longitude',pressure_grid,vardim,instrument)
+    x2, y2, v = get_variable_2d(save_dir,fname,fname_keys,fname_spec,fname_save,'v',read_saved_var,save_var,time_1,time_2,lon,lat_min,lat_max,plevel,'latitude_longitude',pressure_grid,vardim,instrument)
     ynew = linspace(amin(y1),amax(y1),12)
 
   elif plot_type=='meridional_mean' or plot_type=='meridional_temporal_mean':
-    x1, y1, u = get_variable_2d(save_dir,fname,fname_keys,fname_save,'u',read_saved_var,save_var,time_1,time_2,lon,lat_min,lat_max,plevel,plot_type,pressure_grid)
-    x2, y2, v = get_variable_2d(save_dir,fname,fname_keys,fname_save,'w',read_saved_var,save_var,time_1,time_2,lon,lat_min,lat_max,plevel,plot_type,pressure_grid)  
+    x1, y1, u = get_variable_2d(save_dir,fname,fname_keys,fname_spec,fname_save,'u',read_saved_var,save_var,time_1,time_2,lon,lat_min,lat_max,plevel,plot_type,pressure_grid,vardim,instrument)
+    x2, y2, v = get_variable_2d(save_dir,fname,fname_keys,fname_spec,fname_save,'w',read_saved_var,save_var,time_1,time_2,lon,lat_min,lat_max,plevel,plot_type,pressure_grid,vardim,instrument)  
     ynew = logspace(amin(log10(y1)),amax(log10(y1)),12)
   elif plot_type=='pressure_latitude':
-    x1, y1, u = get_variable_2d(save_dir,fname,fname_keys,fname_save,'v',read_saved_var,save_var,time_1,time_2,lon,lat_min,lat_max,plevel,plot_type,pressure_grid)
-    x2, y2, v = get_variable_2d(save_dir,fname,fname_keys,fname_save,'w',read_saved_var,save_var,time_1,time_2,lon,lat_min,lat_max,plevel,plot_type,pressure_grid)  
+    x1, y1, u = get_variable_2d(save_dir,fname,fname_keys,fname_spec,fname_save,'v',read_saved_var,save_var,time_1,time_2,lon,lat_min,lat_max,plevel,plot_type,pressure_grid,vardim,instrument)
+    x2, y2, v = get_variable_2d(save_dir,fname,fname_keys,fname_spec,fname_save,'w',read_saved_var,save_var,time_1,time_2,lon,lat_min,lat_max,plevel,plot_type,pressure_grid,vardim,instrument)  
     ynew = logspace(amin(log10(y1)),amax(log10(y1)),12)
 
   else:
@@ -91,6 +91,9 @@ def get_wind_vectors(save_dir,fname,fname_keys,fname_save,varname,read_saved_var
 def plot_um_2d(fname,fname_keys,varname,plot_type,
 # Optional variables
 varname2=None,
+vardim=4,
+fname_spec='',
+instrument=None,
 # Dimension variables
 time_1=None,time_2=None,level=None,lat_min=None,lat_max=None,lon=None,
 pressure_grid=True,
@@ -106,11 +109,11 @@ ymin=None,ymax=None,
 showfig=False,save_fig=False,fname_save='um_post_proc',plot_title=None,read_saved_var=False,save_var=False,save_dir='',save_ext='.png'):
 
   # Get variable
-  x, y, var = get_variable_2d(save_dir,fname,fname_keys,fname_save,varname,read_saved_var,save_var,time_1,time_2,lon,lat_min,lat_max,level,plot_type,pressure_grid)
+  x, y, var = get_variable_2d(save_dir,fname,fname_keys,fname_spec,fname_save,varname,read_saved_var,save_var,time_1,time_2,lon,lat_min,lat_max,level,plot_type,pressure_grid,vardim,instrument)
   
   # If taking ratio with second variable
   if varname2!=None:
-    x2, y2, var2 = get_variable_2d(save_dir,fname,fname_keys,fname_save,varname2,read_saved_var,save_var,time_1,time_2,lon,lat_min,lat_max,level,plot_type,pressure_grid)
+    x2, y2, var2 = get_variable_2d(save_dir,fname,fname_keys,fname_save,varname2,read_saved_var,save_var,time_1,time_2,lon,lat_min,lat_max,level,plot_type,pressure_grid,vardim,instrument)
     var = var/var2
 
   # Plot
@@ -120,7 +123,7 @@ showfig=False,save_fig=False,fname_save='um_post_proc',plot_title=None,read_save
   
   if wind_vectors:
     # Plot wind vectors
-    xwind,ywind,wind1, wind2 = get_wind_vectors(save_dir,fname,fname_keys,fname_save,varname,read_saved_var,save_var,time_1,time_2,lon,lat_min,lat_max,level,plot_type,pressure_grid)
+    xwind,ywind,wind1, wind2 = get_wind_vectors(save_dir,fname,fname_keys,fname_spec,fname_save,varname,read_saved_var,save_var,time_1,time_2,lon,lat_min,lat_max,level,plot_type,pressure_grid,vardim,instrument)
       
     quiver(xwind,ywind,wind1,wind2,color='black')
   
