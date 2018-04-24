@@ -207,7 +207,8 @@ def meridional_mean(fname,varname,time_var,height_var,lat_var,lon_var,var,time_1
   else:
     vert_coord = height_var
     lon = lon_var
-    index = argmin(abs(time_1,time_var))
+
+    index = abs(argmin(time_1-time_var))
     var = var[index,:,:,:]
  
   # Meridional mean

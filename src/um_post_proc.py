@@ -98,7 +98,7 @@ instrument=None,
 time_1=None,time_2=None,level=None,lat_min=None,lat_max=None,lon=None,
 pressure_grid=True,
 # Plotting variables
-vmin=None,vmax=None,cmap='Blues',smooth=False,smooth_log=False,smooth_factor=1,cbar_label='',cbar_type='',
+vmin=None,vmax=None,color_map=True,cmap='Blues',smooth=False,smooth_log=False,smooth_factor=1,cbar_label='',cbar_type='',
 # Contour variables
 contours=False,ncont=5,cont_scale='linear',cont_colour=['black'],cont_linewidth=[1],cont_min=None,cont_max=None,
 # Wind vectors
@@ -118,7 +118,7 @@ showfig=False,save_fig=False,fname_save='um_post_proc',plot_title=None,read_save
 
   # Plot
   plot_variable_2d(y,x,var,plot_type,smooth,smooth_factor,smooth_log,vmin,vmax,cont_min,cont_max,
-  cmap,cbar_label,cbar_type,contours,ncont,cont_scale,cont_colour,cont_linewidth,
+  color_map,cmap,cbar_label,cbar_type,contours,ncont,cont_scale,cont_colour,cont_linewidth,
   ymin,ymax,pressure_grid)
   
   if wind_vectors:
@@ -143,10 +143,13 @@ showfig=False,save_fig=False,fname_save='um_post_proc',plot_title=None,read_save
 # Function to create a 2D difference plot 
 def plot_um_2d_diff(fname_1,fname_2,fname_keys,varname,plot_type,
 # Dimension variables
-time_min_1=None,time_min_2=None,time_max_1=None,time_max_2=None,plevel=None,lat_min=None,lat_max=None,lon=None,
+time_min_1=None,time_min_2=None,time_max_1=None,time_max_2=None,level=None,lat_min=None,lat_max=None,lon=None,
 pressure_grid=True,
+vardim=4,
+fname_spec='',
+instrument=None,
 # Plotting variables
-vmin=None,vmax=None,cmap='Blues',smooth=False,smooth_log=False,smooth_factor=1,cbar_label='',cbar_type='',
+vmin=None,vmax=None,color_map=True,cmap='Blues',smooth=False,smooth_log=False,smooth_factor=1,cbar_label='',cbar_type='',
 # Contour variables
 contours=False,ncont=5,cont_scale='linear',cont_colour=['black'],cont_linewidth=[1],cont_min=None,cont_max=None,
 # Plot parameters
@@ -155,9 +158,9 @@ ymin=None,ymax=None,
 rel_diff=False,showfig=False,save_fig=False,fname_save='um_post_proc',plot_title='',read_saved_var=False,save_var=False,save_dir='',save_ext='.png'):
 
   # Get variable 1
-  x1, y1, var1 = get_variable_2d(save_dir,fname_1,fname_keys,fname_save+'1',varname,read_saved_var,save_var,time_min_1,time_max_1,lon,lat_min,lat_max,plevel,plot_type,pressure_grid)
+  x1, y1, var1 = get_variable_2d(save_dir,fname_1,fname_keys,fname_spec,fname_save+'1',varname,read_saved_var,save_var,time_min_1,time_max_1,lon,lat_min,lat_max,level,plot_type,pressure_grid,vardim,instrument)
   # Get variable 2
-  x2, y2, var2 = get_variable_2d(save_dir,fname_2,fname_keys,fname_save+'2',varname,read_saved_var,save_var,time_min_1,time_max_2,lon,lat_min,lat_max,plevel,plot_type,pressure_grid)
+  x2, y2, var2 = get_variable_2d(save_dir,fname_2,fname_keys,fname_spec,fname_save+'2',varname,read_saved_var,save_var,time_min_2,time_max_2,lon,lat_min,lat_max,level,plot_type,pressure_grid,vardim,instrument)
   
   # Check that variables are on same grid
   if (y1 != y2).any():
@@ -192,7 +195,7 @@ rel_diff=False,showfig=False,save_fig=False,fname_save='um_post_proc',plot_title
   
   # Plot
   plot_variable_2d(y,x,var,plot_type,smooth,smooth_factor,smooth_log,vmin,vmax,cont_min,cont_max,
-  cmap,cbar_label,cbar_type,contours,ncont,cont_scale,cont_colour,cont_linewidth,
+  color_map,cmap,cbar_label,cbar_type,contours,ncont,cont_scale,cont_colour,cont_linewidth,
   ymin,ymax,pressure_grid)
   
   # Save figure as pdf
@@ -207,7 +210,7 @@ rel_diff=False,showfig=False,save_fig=False,fname_save='um_post_proc',plot_title
 
 # Function to plot 2d variable
 def plot_variable_2d(y,x,var,plot_type,smooth,smooth_factor,smooth_log,vmin,vmax,cont_min,cont_max,
-cmap,cbar_label,cbar_type,contours,ncont,cont_scale,cont_colour,cont_linewidth,ymin,ymax,pressure_grid):
+color_map,cmap,cbar_label,cbar_type,contours,ncont,cont_scale,cont_colour,cont_linewidth,ymin,ymax,pressure_grid):
 
 	# Smoothing
 	if smooth:
@@ -227,7 +230,8 @@ cmap,cbar_label,cbar_type,contours,ncont,cont_scale,cont_colour,cont_linewidth,y
 		cont_max = amax(var)
 
 	# Plot
-	plot_2d(x,y,var,cmap,vmin,vmax,cbar_label,cbar_type)
+	if color_map:
+	  plot_2d(x,y,var,cmap,vmin,vmax,cbar_label,cbar_type)
 
 	# Add contours
 	if contours:
@@ -235,11 +239,12 @@ cmap,cbar_label,cbar_type,contours,ncont,cont_scale,cont_colour,cont_linewidth,y
 
 	# Set yaxis
 	if plot_type=='zonal_temporal_mean' or plot_type=='zonal_mean' or plot_type=='meridional_temporal_mean' or plot_type=='meridional_mean' or plot_type=='pressure_time' or plot_type=='pressure_latitude' or plot_type=='pressure_longitude':
-		ylim(amax(y),amin(y))
-		yscale('log')
 		if pressure_grid:
+                  yscale('log')
+                  ylim(amax(y),amin(y))
 		  ylabel('Pressure [Pa]',fontsize=20)
 		else:
+                  ylim(amin(y),amax(y))
 		  ylabel('Altitude',fontsize=20)
 	else:
 		ylim(amin(y),amax(y))
