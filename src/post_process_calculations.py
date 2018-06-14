@@ -1,4 +1,5 @@
 from constant_umpp import *
+from constant_user import *
 from pylab import *
 import sys
 from calculate_cs2006_timescale import *
@@ -93,8 +94,22 @@ def post_process_control(varname,var,p,plot_type):
   elif varname=='cf':
     if verbose:
       print 'Requested variable is contribution function'
-    var = calc_cf(var)
-
+    var = calc_cf(var,plot_type)
+  # Heating rate
+  elif varname=='swhr' or varname=='lwhr':
+    if verbose:
+      print 'Requested variable is heating rate'
+    # Do nothing 
+  # Radiative timescale
+  elif varname=='rad_timescale':
+    if verbose:
+      print 'Requested variable if Showman and Guillot 2002 radiative timescale'
+    var = calc_rad_ts(var,p)
+  # TOA flux
+  elif varname=='toa_flux':
+    if verbose:
+      print 'Requested variable is top-of-atmosphere (TOA) flux'
+    # Do nothing
   else:
     print 'Error: post_process_control'
     print '  variable not defined'
@@ -144,7 +159,7 @@ def calc_wind(var):
 # Calculate horizontal dynamical timescale from wind velocity
 def calc_zonal_dyn_timescale(var):
 
-  L = 2.*pi*rp_hd209 # approx planet radius (m)
+  L = 2.*pi*rp # approx planet radius (m)
 
   if 0. in var:
     var[var==0] = 1e-10
@@ -162,7 +177,7 @@ def calc_zonal_dyn_timescale(var):
 # Calculate meridioanl dynamical timescale from wind velocity
 def calc_merid_dyn_timescale(var):
 
-  L = pi*rp_hd209/2. # approx planet radius (m)
+  L = pi*rp/2. # approx planet radius (m)
 
   if 0. in var:
     var[var==0] = 1e-10
@@ -233,16 +248,29 @@ def calc_cs2006_ts(var,p,plot_type):
   return var
   
 # Calculate contribution function
-def calc_cf(var):
+def calc_cf(var,plot_type):
 
-  # Assume pressure is first dimension
-  dims = var.shape
-  norm_cf = zeros(dims)
+  if plot_type=='zonal_mean' or plot_type=='meridional_mean':
 
-  for i in range(dims[1]):
-    norm_cf[:,i] = var[:,i]/amax(var[:,i]) 
+    # Assume pressure is first dimension
+    dims = var.shape
+    norm_cf = zeros(dims)
+
+    for i in range(dims[1]):
+      norm_cf[:,i] = var[:,i]/amax(var[:,i]) 
+  else:
+    norm_cf = var/amax(var)
 
   return norm_cf
   
+# Calculate radiative timescale using eq 10 of Showman and Guillot 2002
+def calc_rad_ts(var,p):
 
+  var = g*4.*sigma*var**3.
+  var = p*cp/var
+
+  if verbose:
+    print 'Calculated radiative timescale'
+
+  return var
 

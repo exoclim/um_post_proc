@@ -8,7 +8,7 @@ from pylab import *
 from spectral import *
 
 # Control function 2D plots
-def construct_variable_2d(fname,fname_keys,fname_spec,varname,time_1,time_2,lon_request,lat_min,lat_max,level,plot_type,pressure_grid,vardim,instrument):
+def construct_variable_2d(fname,fname_keys,fname_spec,varname,time_1,time_2,lon_request,lat_min,lat_max,level,plot_type,pressure_grid,vardim,instrument,nband):
 
 	# Get which variable to read from netcdf file
 	#varread = get_variable_to_read(varname)
@@ -18,7 +18,7 @@ def construct_variable_2d(fname,fname_keys,fname_spec,varname,time_1,time_2,lon_
         if vardim == 4:
 	  t, z, lon, lat, var = read_variable_4d(fname,varread)
         else:
-          t, z, lon, lat, band, var = read_variable_5d(fname,varread)
+          t, z, lon, lat, band, var = read_variable_5d(fname,varread,nband)
           var = process_spectral(t,z,lat,lon,band,var,fname_spec,instrument)
 
 	# Select which method to use to post process variable
@@ -75,14 +75,19 @@ def construct_variable_2d(fname,fname_keys,fname_spec,varname,time_1,time_2,lon_
 	return x, y, var
 
 # Control function 1D plots	
-def construct_variable_1d(fname,fname_keys,varname,time_1,time_2,lat_min,lat_max,lon_min,lon_max,plot_type,pressure_grid):
+def construct_variable_1d(fname,fname_keys,fname_spec,varname,time_1,time_2,lat_min,lat_max,lon_min,lon_max,plot_type,pressure_grid,vardim,instrument,nband):
 
 	# Get which variable to read from netcdf file
 	#varread = get_variable_to_read(varname)
 	varread = read_netcdf_keys(fname_keys,varname)
 
-	# Read variable (assumes it is a 4D variable)
-	t, z, lon, lat, var = read_variable_4d(fname,varread)
+        # Read variable (assumes it is a 4D variable)
+        if vardim == 4:
+          t, z, lon, lat, var = read_variable_4d(fname,varread)
+        else:
+          t, z, lon, lat, band, var = read_variable_5d(fname,varread,nband)
+          var = process_spectral(t,z,lat,lon,band,var,fname_spec,instrument)
+
 
 	# Select which method to use to post process variabl
 	if plot_type=='area_average' or plot_type=='dayside_average' or plot_type=='nightside_average':
@@ -98,15 +103,19 @@ def construct_variable_1d(fname,fname_keys,varname,time_1,time_2,lat_min,lat_max
 	
 	return y, var
 	
-def construct_variable_multi_1d(fname,fname_keys,varname,time_1,time_2,lat_request,lon_request,plot_type,pressure_grid):
+def construct_variable_multi_1d(fname,fname_keys,fname_spec,varname,time_1,time_2,lat_request,lon_request,plot_type,pressure_grid,vardim,instrument,nband):
 
 	# Get which variable to read from netcdf file
 	#varread = get_variable_to_read(varname)
 	varread = read_netcdf_keys(fname_keys,varname)
 
-	# Read variable (assumes it is a 4D variable)
-	t, z, lon, lat, var = read_variable_4d(fname,varread)
-	
+        # Read variable (assumes it is a 4D variable)
+        if vardim == 4:
+          t, z, lon, lat, var = read_variable_4d(fname,varread)
+        else:
+          t, z, lon, lat, band, var = read_variable_5d(fname,varread,nband)
+          var = process_spectral(t,z,lat,lon,band,var,fname_spec,instrument)
+
 	# Select which method to use to post process variable
 	if plot_type=='column':
 		nlon, nlat, p, var = extract_column_multi(fname,varname,t,z,lat,lon,var,time_1,time_2,lat_request,lon_request,plot_type,pressure_grid)

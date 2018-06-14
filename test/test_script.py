@@ -10,7 +10,7 @@ save_dir = 'test_output/'
 
 showfig=False
 save_fig=True
-read_saved_var = True
+read_saved_var = False
 save_var = True
 save_ext = '.pdf'
 

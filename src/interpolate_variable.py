@@ -166,7 +166,7 @@ def interpolate_on_p_profile(time_var,height_var,lat_var,lon_var,var,time_1,fnam
 			# Get pressure on variable height grid
 			pvargrid[:,ilat,ilon] = linear_interp_1d(height_p,height_var,p[:,ilat,ilon])
 
-	# Compute new uniform P grid
+        # Compute new uniform P grid
 	pmin = amax(pvargrid[0,:,:])*1.000001
 	pmax = amin(pvargrid[-1,:,:])/1.00001   
 	pnew = logspace(log10(pmax),log10(pmin),nheight_p)

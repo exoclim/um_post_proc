@@ -31,21 +31,32 @@ def read_variable_4d(fname,varname):
   return time, height, longitude, latitude, variable
 
 # Read variable on 3D grid + time + bands
-def read_variable_5d(fname,varname):
+def read_variable_5d(fname,varname,nband):
 
   # Open netcdf file
   data = nc.Dataset(fname,'r')
 
   # Read variable dimensions
-  dims      = data.variables[varname].dimensions
+  dims      = data.variables['unspecified'].dimensions
   time      = data.variables[dims[0]][:]
   height    = data.variables[dims[1]][:]
   latitude  = data.variables[dims[2]][:]
   longitude = data.variables[dims[3]][:]
-  band      = data.variables[dims[4]][:]
+  
+  # Create band dimension
+  band      = linspace(1,nband,nband)
+  #band      = data.variables[dims[4]][:]
+  
+  # Define variable array
+  variable = zeros((time.size,height.size,latitude.size,longitude.size,band.size))
 
   # Read variable
-  variable = data.variables[varname][:,:,:,:,:]
+  #variable = data.variables[varname][:,:,:,:,:]
+  for i in range(nband):
+    if i==0:
+      variable[:,:,:,:,i] = data.variables['unspecified'][:,:,:,:]
+    else: 
+      variable[:,:,:,:,i] = data.variables['unspecified_'+str(i)][:,:,:,:]
 
   if verbose:
     print 'Read variable: ', varname
