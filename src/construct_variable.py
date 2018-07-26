@@ -1,8 +1,6 @@
 from read_variables import *
 from interpolate_variable import *
 from mean_variable import *
-from post_process_calculations import *
-from variable_defs import *
 from pylab import *
 from spectral import *
 

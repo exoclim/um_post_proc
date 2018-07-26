@@ -356,13 +356,14 @@ pressure_grid=True,
 vardim=4,
 fname_spec=None,
 instrument=None,
+nband=None,
 # Plotting variables
 color='black',alpha=1.,linewidth=1,linestyle='-',label='',log_x=False,log_y=False,xmin=None,xmax=None,ymin=None,ymax=None,xlab='',
 # Parameters
 showfig=False,save_fig=False,fname_save='um_post_proc',plot_title='',read_saved_var=False,save_var=False,save_dir='',save_ext='.png'):
 
   # Get variable
-  nlon, nlat, y, var = get_variable_multi_1d(save_dir,fname,fname_keys,fname_spec,fname_save,varname,read_saved_var,save_var,time_1,time_2,lat,lon,plot_type,pressure_grid,vardim,instrument)
+  nlon, nlat, y, var = get_variable_multi_1d(save_dir,fname,fname_keys,fname_spec,fname_save,varname,read_saved_var,save_var,time_1,time_2,lat,lon,plot_type,pressure_grid,vardim,instrument,nband)
 
   # Plot
   for ilat in range(nlat):
