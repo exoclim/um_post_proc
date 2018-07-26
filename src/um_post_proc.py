@@ -1,4 +1,5 @@
 from construct_variable import *
+from calculate_variable import *
 from save_var import *
 from pylab import *
 from matplotlib.mlab import bivariate_normal
@@ -15,9 +16,10 @@ def get_variable_2d(save_dir,fname,fname_keys,fname_spec,fname_save,varname,read
 		y, x, var = read_saved_var_2d(save_dir,fname_save+'_'+varname)
 
 	else:
+		
 		# Construct variable
-		x, y, var = construct_variable_2d(fname,fname_keys,fname_spec,varname,time_1,time_2,lon,lat_min,lat_max,plevel,plot_type,pressure_grid,vardim,instrument,nband)
-	
+		x, y, var = calculate_variable(fname,fname_keys,fname_spec,varname,time_1,time_2,lon,lat_min,lat_max,plevel,plot_type,pressure_grid,vardim,instrument,nband)
+		
 		# Save variable
 		if save_var:
 			save_var_2d(save_dir,fname_save+'_'+varname,x,y,var)
@@ -136,7 +138,7 @@ showfig=False,save_fig=False,fname_save='um_post_proc',plot_title=None,read_save
   if save_fig:
     savefig(save_dir+fname_save+save_ext)
     if verbose:
-      print 'Saved figure at: ',fname_save+'.pdf'
+      print 'Saved figure at: ',save_dir+fname_save+'.pdf'
   
   # Show figure on screen
   if showfig:
@@ -210,7 +212,7 @@ rel_diff=False,showfig=False,save_fig=False,fname_save='um_post_proc',plot_title
   if save_fig:
     savefig(save_dir+fname_save+save_ext)
     if verbose:
-      print 'Saved figure at: ',fname_save+'.pdf'
+      print 'Saved figure at: ',save_dir+fname_save+'.pdf'
   
   # Show figure on screen
   if showfig:
@@ -341,7 +343,7 @@ showfig=False,save_fig=False,fname_save='um_post_proc',plot_title='',read_saved_
   if save_fig:
     savefig(save_dir+fname_save+save_ext)
     if verbose:
-      print 'Saved figure at: ',fname_save+'.pdf'
+      print 'Saved figure at: ',save_dir+fname_save+'.pdf'
   
   # Show figure on screen
   if showfig:
@@ -373,7 +375,7 @@ showfig=False,save_fig=False,fname_save='um_post_proc',plot_title='',read_saved_
   if save_fig:
     savefig(save_dir+fname_save+save_ext)
     if verbose:
-      print 'Saved figure at: ',fname_save+'.pdf'
+      print 'Saved figure at: ',save_dir+fname_save+'.pdf'
   
   # Show figure on screen
   if showfig:
@@ -421,6 +423,10 @@ def plot_contour(x,y,z,cont_min,cont_max,ncont,scale,color,linewidth):
     dcon = (cont_max-cont_min)/ncont
     con_levels = linspace(cont_min+dcon,cont_max-dcon,ncont)
     cont_fmt = '%1.1f'
+  elif scale == 'linear_log_label':
+    dcon = (cont_max-cont_min)/ncont
+    con_levels = linspace(cont_min+dcon,cont_max-dcon,ncont)
+    cont_fmt = '%1.1e'    
   elif scale == 'log':
     dcon = (log10(cont_max)-log10(cont_min))/ncont
     con_levels = logspace(log10(cont_min)+dcon,log10(cont_max)-dcon,ncont)

@@ -25,6 +25,10 @@ def process_spectral(t,z,lat,lon,band,var,fname,instrument):
           for ilon in range(lon.size):
             var_new[itime,iheight,ilat,ilon] = sum(var[itime,iheight,ilat,ilon,:])
   # Get in channel
+  # Nearest band
+  elif type(instrument) == float:
+    index = argmin(abs(instrument-wv))
+    var_new = var[:,:,:,:,index]
   else:
     channel_wv, response = read_instrument_response(instrument)
     for itime in range(t.size):

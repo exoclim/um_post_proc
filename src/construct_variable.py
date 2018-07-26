@@ -4,75 +4,74 @@ from mean_variable import *
 from post_process_calculations import *
 from variable_defs import *
 from pylab import *
-
 from spectral import *
 
 # Control function 2D plots
 def construct_variable_2d(fname,fname_keys,fname_spec,varname,time_1,time_2,lon_request,lat_min,lat_max,level,plot_type,pressure_grid,vardim,instrument,nband):
 
-	# Get which variable to read from netcdf file
-	#varread = get_variable_to_read(varname)
-	varread = read_netcdf_keys(fname_keys,varname)
+  # Get which variable to read from netcdf file
+  # varread = get_variable_to_read(varname)
+  varread = read_netcdf_keys(fname_keys,varname)
 
-	# Read variable (assumes it is a 4D variable)
-        if vardim == 4:
-	  t, z, lon, lat, var = read_variable_4d(fname,varread)
-        else:
-          t, z, lon, lat, band, var = read_variable_5d(fname,varread,nband)
-          var = process_spectral(t,z,lat,lon,band,var,fname_spec,instrument)
+  # Read variable
+  if vardim == 4:
+    t, z, lon, lat, var = read_variable_4d(fname,varread)
+  else:
+    t, z, lon, lat, band, var = read_variable_5d(fname,varread,nband)
+    var = process_spectral(t,z,lat,lon,band,var,fname_spec,instrument)
 
-	# Select which method to use to post process variable
-	# Compute a zonal temporal mean
-	if plot_type=='zonal_temporal_mean':
-		x, y, var = zonal_temporal_mean(fname,varname,t,z,lat,lon,var,time_1,time_2,plot_type,pressure_grid)
-		
-	elif plot_type=='zonal_mean':
-		x, y, var = zonal_mean(fname,varname,t,z,lat,lon,var,time_1,plot_type,pressure_grid)
+  # Select which method to use to post process variable
+  # Compute a zonal temporal mean
+  if plot_type=='zonal_temporal_mean':
+    x, y, var = zonal_temporal_mean(fname,varname,t,z,lat,lon,var,time_1,time_2,plot_type,pressure_grid)
 
-	# Compute a meridional temporal mean
-	elif plot_type=='meridional_temporal_mean':
-		# Compute meridional temporal mean
-		x, y, var = meridional_temporal_mean(fname,varname,t,z,lat,lon,var,time_1,time_2,lat_min,lat_max,plot_type,pressure_grid)
+  elif plot_type=='zonal_mean':
+    x, y, var = zonal_mean(fname,varname,t,z,lat,lon,var,time_1,plot_type,pressure_grid)
 
-	# Compute a meridional mean at a snapshot
-	elif plot_type=='meridional_mean':
-		# Compute meridional mean
-		x, y, var = meridional_mean(fname,varname,t,z,lat,lon,var,time_1,lat_min,lat_max,plot_type,pressure_grid)
+  # Compute a meridional temporal mean
+  elif plot_type=='meridional_temporal_mean':
+    # Compute meridional temporal mean
+    x, y, var = meridional_temporal_mean(fname,varname,t,z,lat,lon,var,time_1,time_2,lat_min,lat_max,plot_type,pressure_grid)
 
-	# Compute a latitude longitide snapshot
-	elif plot_type=='latitude_longitude':
-		# Compute pressure level
-		x, y, var = latitude_longitude_slice(fname,varname,t,z,lat,lon,var,time_1,level,plot_type,pressure_grid)
-		
-	elif plot_type=='pressure_latitude':
-	  # Compute latitude slice at given longitude
-	  x, y, var = pressure_latitude(fname,varname,t,z,lat,lon,var,time_1,lon_request,plot_type)
+  # Compute a meridional mean at a snapshot
+  elif plot_type=='meridional_mean':
+    # Compute meridional mean
+    x, y, var = meridional_mean(fname,varname,t,z,lat,lon,var,time_1,lat_min,lat_max,plot_type,pressure_grid)
 
-	elif plot_type=='pressure_longitude':
-	  # Compute latitude slice at given longitude
-	  x, y, var = pressure_longitude(fname,varname,t,z,lat,lon,var,time_1,lat_min,plot_type)
+  # Compute a latitude longitide snapshot
+  elif plot_type=='latitude_longitude':
+    # Compute pressure level
+    x, y, var = latitude_longitude_slice(fname,varname,t,z,lat,lon,var,time_1,level,plot_type,pressure_grid)
 
-	# Compute pressure time
-	elif plot_type=='pressure_time':
-		x, y, var = pressure_time(fname,varname,t,z,lat,lon,var,time_1,time_2,lat_min,lat_max,plot_type)
-		
-	elif plot_type=='latitude_time':
-		x, y, var = latitude_time(fname,varname,t,z,lat,lon,var,time_1,time_2,level,lon_request,plot_type)
-  
-	# Surface variable (i.e. one vertical level)
-	elif plot_type=='surface':
-		x, y, var = surface(fname,varname,t,z,lat,lon,var,time_1,plot_type)
-		
-	# Surface variable temporal mean (i.e. one vertical level)
-	elif plot_type=='surface_temporal_mean':
-		x, y, var = surface_temporal_mean(fname,varname,t,z,lat,lon,var,time_1,time_2,plot_type)
+  elif plot_type=='pressure_latitude':
+    # Compute latitude slice at given longitude
+    x, y, var = pressure_latitude(fname,varname,t,z,lat,lon,var,time_1,lon_request,plot_type)
 
-	else:
-		print 'Error: get_variable_2d'
-		print '  plot_type',plot_type,'not implemented'
-		sys.exit()
+  elif plot_type=='pressure_longitude':
+    # Compute latitude slice at given longitude
+    x, y, var = pressure_longitude(fname,varname,t,z,lat,lon,var,time_1,lat_min,plot_type)
 
-	return x, y, var
+  # Compute pressure time
+  elif plot_type=='pressure_time':
+    x, y, var = pressure_time(fname,varname,t,z,lat,lon,var,time_1,time_2,lat_min,lat_max,plot_type)
+
+  elif plot_type=='latitude_time':
+    x, y, var = latitude_time(fname,varname,t,z,lat,lon,var,time_1,time_2,level,lon_request,plot_type)
+
+  # Surface variable (i.e. one vertical level)
+  elif plot_type=='surface':
+    x, y, var = surface(fname,varname,t,z,lat,lon,var,time_1,plot_type)
+
+  # Surface variable temporal mean (i.e. one vertical level)
+  elif plot_type=='surface_temporal_mean':
+    x, y, var = surface_temporal_mean(fname,varname,t,z,lat,lon,var,time_1,time_2,plot_type)
+
+  else:
+    print 'Error: get_variable_2d'
+    print '  plot_type',plot_type,'not implemented'
+    sys.exit()
+
+  return x, y, var
 
 # Control function 1D plots	
 def construct_variable_1d(fname,fname_keys,fname_spec,varname,time_1,time_2,lat_min,lat_max,lon_min,lon_max,plot_type,pressure_grid,vardim,instrument,nband):
@@ -146,7 +145,7 @@ def zonal_temporal_mean(fname,varname,time_var,height_var,lat_var,lon_var,var,ti
   var = mean_var(var,axis=2)
   
   # Post process variable
-  var = post_process_control(varname,var,vert_coord,plot_type)
+  #var = post_process_control(varname,var,vert_coord,plot_type)
 
   if verbose:
     print 'Constructed zonal temporal mean of variable:'
@@ -170,7 +169,7 @@ def zonal_mean(fname,varname,time_var,height_var,lat_var,lon_var,var,time_1,plot
   var = mean_var(var,axis=2)
   
   # Post process variable
-  var = post_process_control(varname,var,vert_coord,plot_type)
+  #var = post_process_control(varname,var,vert_coord,plot_type)
 
   if verbose:
     print 'Constructed zonal temporal mean of variable:'
@@ -199,7 +198,7 @@ def meridional_temporal_mean(fname,varname,time_var,height_var,lat_var,lon_var,v
   var = spatial_mean_weight_lim(lat,var[:,index,:],weights=cos(radians(lat[index])),axis=1)
   
   # Post process variable
-  var = post_process_control(varname,var,vert_coord,plot_type)
+  #var = post_process_control(varname,var,vert_coord,plot_type)
 
   if verbose:
     print 'Constructed meridional temporal mean of variable:'
@@ -226,7 +225,7 @@ def meridional_mean(fname,varname,time_var,height_var,lat_var,lon_var,var,time_1
   var = spatial_mean_weight_lim(lat_var,var[:,index,:],weights=cos(radians(lat_var[index])),axis=1)
   
   # Post process variable
-  var = post_process_control(varname,var,vert_coord,plot_type)
+  #var = post_process_control(varname,var,vert_coord,plot_type)
 
   if verbose:
     print 'Constructed meridional temporal mean of variable:'
@@ -256,7 +255,8 @@ def latitude_longitude_slice(fname,varname,time_var,height_var,lat_var,lon_var,v
         var_at_level[ilat,ilon] = linear_interp_1d(height_var,level,var[:,ilat,ilon])
 
   # Post process variable
-  var = post_process_control(varname,var_at_level,vert_coord,plot_type)
+  #var = post_process_control(varname,var_at_level,vert_coord,plot_type)
+  var = var_at_level
 
   if verbose:
     print 'Constructed pressure slice of variable ', varname,' min value: ', amin(var), ' max value: ', amax(var)
@@ -273,7 +273,7 @@ def pressure_latitude(fname,varname,time_var,height_var,lat_var,lon_var,var,time
   var = var[:,:,index]
   
   # Post process variable
-  var = post_process_control(varname,var,p,plot_type)
+  #var = post_process_control(varname,var,p,plot_type)
 
   return lat, p, var
   
@@ -287,7 +287,7 @@ def pressure_longitude(fname,varname,time_var,height_var,lat_var,lon_var,var,tim
   var = var[:,index,:]
   
   # Post process variable
-  var = post_process_control(varname,var,p,plot_type)
+  #var = post_process_control(varname,var,p,plot_type)
 
   return lon, p, var
       
@@ -348,13 +348,9 @@ def surface(fname,varname,time_var,height_var,lat_var,lon_var,var,time_1,plot_ty
     print 'Calculating surface variable'
     print ' time: ',time_var[itime]
   
-  pdummy = 1.0 # Not read in pressure, pass dummy argument 
+  #pdummy = 1.0 # Not read in pressure, pass dummy argument 
   # Post process
-  var = post_process_control(varname,var,pdummy,plot_type)
-  
-  print lon_var.shape
-  print lat_var.shape
-  print var.shape
+  #var = post_process_control(varname,var,pdummy,plot_type)
   
   return lon_var,lat_var, var
   
@@ -371,13 +367,9 @@ def surface_temporal_mean(fname,varname,time_var,height_var,lat_var,lon_var,var,
     print 'Calculating surface variable'
     print ' temporal mean: ',time_var[itime_1],time_var[itime_2]
   
-  pdummy = 1.0 # Not read in pressure, pass dummy argument 
+  ##pdummy = 1.0 # Not read in pressure, pass dummy argument 
   # Post process
-  var = post_process_control(varname,var,pdummy,plot_type)
-  
-  print lon_var.shape
-  print lat_var.shape
-  print var.shape
+  #var = post_process_control(varname,var,pdummy,plot_type)
   
   return lon_var,lat_var, var
 
@@ -409,8 +401,9 @@ def extract_column(fname,varname,t,z,lat,lon,var,time_min,lat_request,lon_reques
   var_at_point = interpolate_latitude_longitude_2d(vert_coord,lon,lat,lon_request,lat_request,var)
   
   # Post process variable
-  var = post_process_control(varname,var_at_point,vert_coord,plot_type)
-
+  #var = post_process_control(varname,var_at_point,vert_coord,plot_type)
+  var = var_at_point
+  
   return vert_coord, var
 
 # Hemisphere average
@@ -456,7 +449,7 @@ def area_average(fname,varname,time_var,height_var,lat_var,lon_var,var,time,lat_
 	var = mean(var[:,index_lon],axis=1)
 
 	# Post process variable
-	var = post_process_control(varname,var,vert_coord,plot_type)
+	#var = post_process_control(varname,var,vert_coord,plot_type)
 
 	return vert_coord, var
 
@@ -510,7 +503,7 @@ def area_average_temporal_mean(fname,varname,time_var,height_var,lat_var,lon_var
 	var = mean(var[:,index_lon],axis=1)
 
 	# Post process variable
-	var = post_process_control(varname,var,vert_coord,plot_type)
+	#var = post_process_control(varname,var,vert_coord,plot_type)
 
 	return vert_coord, var
 
@@ -541,7 +534,8 @@ def extract_column_multi(fname,varname,time_var,height_var,lat_var,lon_var,var,t
       var_at_point[:,ilat,ilon] = interpolate_latitude_longitude_2d(vert_coord,lon_var,lat_var,lon_request[ilon],lat_request[ilat],var)
       
   # Post process variable
-  var = post_process_control(varname,var_at_point,vert_coord,plot_type)
+  #var = post_process_control(varname,var_at_point,vert_coord,plot_type)
+  var = var_at_point
 
   return nlat, nlon, vert_coord, var
 
