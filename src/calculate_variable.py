@@ -9,9 +9,6 @@ from constant_user import *
 def calculate_variable(fname,fname_keys,fname_spec,varname,time_1,time_2,lon,lat_min,lat_max,
   level,plot_type,pressure_grid,vardim,instrument,nband):
 
-  print "HELLO"
-  print varname
-
   # Zonal wind
   if varname=='u':
     if verbose:
@@ -65,6 +62,13 @@ def calculate_variable(fname,fname_keys,fname_spec,varname,time_1,time_2,lon,lat
   elif varname=='co_mole_fraction':
     if verbose:
       print 'Requested variable is carbon monoxide mole fraction'
+    x, y, var = construct_variable_2d(fname,fname_keys,fname_spec,varname,time_1,time_2,lon,lat_min,lat_max,
+    level,plot_type,pressure_grid,vardim,instrument,nband)
+
+  # Ammonia mole fraction
+  elif varname=='nh3_mole_fraction':
+    if verbose:
+      print 'Requested variable is ammonia mole fraction'
     x, y, var = construct_variable_2d(fname,fname_keys,fname_spec,varname,time_1,time_2,lon,lat_min,lat_max,
     level,plot_type,pressure_grid,vardim,instrument,nband)
   

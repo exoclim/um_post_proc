@@ -224,7 +224,7 @@ color_map,cmap,cbar_label,cbar_type,contours,ncont,cont_scale,cont_colour,cont_l
 
 	# Smoothing
 	if smooth:
-		if plot_type=='zonal_temporal_mean' or plot_type=='zonal_mean' or plot_type=='meridional_temporal_mean' or plot_type=='meridional_mean' or plot_type=='pressure_latitude' or plot_type=='pressure_longitude':
+		if plot_type=='zonal_temporal_mean' or plot_type=='zonal_mean' or plot_type=='meridional_temporal_mean' or plot_type=='meridional_mean' or plot_type=='pressure_latitude' or plot_type=='pressure_longitude' or plot_type=='pressure_time':
 			x, y, var = smooth_2d_xlinear_ylog(x,y,var,smooth_factor,smooth_log)
 		else:
 			x, y, var = smooth_2d(x,y,var,smooth_factor,smooth_log)
