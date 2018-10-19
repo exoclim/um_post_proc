@@ -3,6 +3,8 @@ from read_variables import *
 from interpolate_variable import *
 from pylab import *
 import sys
+import numpy
+
 def process_spectral(t,z,lat,lon,band,var,fname,instrument):
 
   if verbose: 
@@ -29,6 +31,18 @@ def process_spectral(t,z,lat,lon,band,var,fname,instrument):
   elif type(instrument) == float:
     index = argmin(abs(instrument-wv))
     var_new = var[:,:,:,:,index]
+  # Mean between limits
+  elif type(instrument) is list:
+    # Get indices of minimum and maximum wavelength
+    index_min = argmin(abs(instrument[0]-wv))
+    index_max = argmin(abs(instrument[1]-wv))
+    print index_min, wv[index_min]
+    print index_max, wv[index_max]
+    for itime in range(t.size):
+      for iheight in range(z.size):
+        for ilat in range(lat.size):
+          for ilon in range(lon.size):
+            var_new[itime,iheight,ilat,ilon] = mean(var[itime,iheight,ilat,ilon,index_max:index_min])
   else:
     channel_wv, response = read_instrument_response(instrument)
     for itime in range(t.size):
