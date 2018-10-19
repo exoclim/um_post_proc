@@ -469,6 +469,34 @@ def smooth_2d_xlinear_ylog(x,y,z,smooth_factor,smooth_log):
 
 	return xnew, ynew,znew
 
+# Function to smooth 2d data with logarithm 
+def smooth_2d_ylinear_xlog(x,y,z,smooth_factor,smooth_log):
+
+        if verbose:
+                print 'Performing smoothing by cubic interpolation, smoothing factor:', smooth_factor
+                print ' smoothing with x dimension linear, y dimension logarithmic'
+
+        # Perform interpolation in log space
+        if smooth_log:
+                z = log10(z)
+
+        # Define new dimensions
+        xnew = logspace(amin(log10(x)),amax(log10(x)),int(x.size*smooth_factor))
+        ynew = linspace(amin(y),amax(y),int(y.size*smooth_factor))
+
+        # Interpolate
+        znew = cubic_interp_2d(x,xnew,y,ynew,z)
+
+        if smooth_log:
+                znew = 10.**znew
+
+        if verbose:
+                print 'variable smoothed'
+                print '  new variable max:', amax(znew), 'min: ', amin(znew)
+
+        return xnew, ynew,znew
+
+
 def smooth_2d(x,y,z,smooth_factor,smooth_log):
 
   if verbose:
