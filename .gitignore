@@ -9,3 +9,4 @@ src/spectral.pyc
 src/um_post_proc.pyc
 test/constant_user.py
 test/constant_user.pyc
+test/test_output/*
