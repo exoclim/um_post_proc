@@ -71,7 +71,35 @@ def calculate_variable(fname,fname_keys,fname_spec,varname,time_1,time_2,lon,lat
       print 'Requested variable is ammonia mole fraction'
     x, y, var = construct_variable_2d(fname,fname_keys,fname_spec,varname,time_1,time_2,lon,lat_min,lat_max,
     level,plot_type,pressure_grid,vardim,instrument,nband)
-  
+
+  # Nitrogen mole fraction
+  elif varname=='n2_mole_fraction':
+    if verbose:
+      print 'Requested variable is nitrogen mole fraction'
+    x, y, var = construct_variable_2d(fname,fname_keys,fname_spec,varname,time_1,time_2,lon,lat_min,lat_max,
+    level,plot_type,pressure_grid,vardim,instrument,nband)
+
+  # Hydrogen cyanide mole fraction
+  elif varname=='hcn_mole_fraction':
+    if verbose:
+      print 'Requested variable is hydrogen cyanide mole fraction'
+    x, y, var = construct_variable_2d(fname,fname_keys,fname_spec,varname,time_1,time_2,lon,lat_min,lat_max,
+    level,plot_type,pressure_grid,vardim,instrument,nband)
+
+  # carbon dioxide mole fraction
+  elif varname=='co2_mole_fraction':
+    if verbose:
+      print 'Requested variable is carbon dioxide mole fraction'
+    x, y, var = construct_variable_2d(fname,fname_keys,fname_spec,varname,time_1,time_2,lon,lat_min,lat_max,
+    level,plot_type,pressure_grid,vardim,instrument,nband)
+
+  # OH mole fraction
+  elif varname=='oh_mole_fraction':
+    if verbose:
+      print 'Requested variable is OH mole fraction'
+    x, y, var = construct_variable_2d(fname,fname_keys,fname_spec,varname,time_1,time_2,lon,lat_min,lat_max,
+    level,plot_type,pressure_grid,vardim,instrument,nband)
+
   # Longwave heating rate in [W/m3]
   elif varname=='lwhr_wm3':
     if verbose:
