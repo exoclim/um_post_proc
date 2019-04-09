@@ -386,15 +386,6 @@ def extract_column(fname,varname,t,z,lat,lon,var,time_min,lat_request,lon_reques
   else:
     vert_coord = height_var
     
-
-#   Compute temporal mean or get variable at time
-#   if time_max == None:
-#     itime = argmin(abs(t-time_min))
-#     var = var_interp[itime,:,:,:]
-#   else:
-#     Compute temporal mean
-#     var = mean_lim(t,var_interp,time_min,time_max,axis=0)
-
   # Interpolate to get profile at requested points
   var_at_point = interpolate_latitude_longitude_2d(vert_coord,lon,lat,lon_request,lat_request,var)
   

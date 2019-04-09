@@ -157,7 +157,6 @@ def interpolate_on_p_profile(time_var,height_var,lat_var,lon_var,var,time_1,fnam
 	var = var[::-1,:,:]
 
 	pvargrid = zeros((nheight,nlat,nlon))
-
 	# Find pressure values on variable height grid
 	# Loop over longitudes
 	for ilon in range(nlon):
@@ -272,35 +271,39 @@ def interpolate_on_p_point_time(time_var,height_var,lat_var,lon_var,var,plevel,f
 
 	return lat_p, lon_p,var_at_p
 
-# Function to interpolate in longitude
-def interpolate_longitude(ntime,nheight,nlat,nlong,long_var,long_p,var,p):
+# Function to interpolate variable onto pressure longitude grid longitude
+def interpolate_longitude(ntime,nheight,nlat,nlong,long_p,long_var,p,var):
 
-  # Perform periodic interpolation
-  # First copy first value to end of array for periodic interpolation
-  dlon = long_p[1]-long_p[0] # assume uniform grid
-  long_p = append(long_p,long_p[-1]+dlon)
-  long_p = long_p[::-1]
-  long_p = append(long_p,long_p[-1]-dlon)
-  long_p = long_p[::-1]
+  # Extend arrays using periodic boundaries
+  dlon = long_p[1] - long_p[0] # assuming uniform grid
+  long_p_loc = append(long_p,long_p[-1]+dlon)
+  long_p_loc = long_p_loc[::-1]
+  long_p_loc = append(long_p_loc,long_p[0]-dlon)
+  long_p_loc = long_p_loc[::-1]
 
-  p_interp = zeros((ntime,nheight,nlat,nlong))
-  
+  long_var_loc = append(long_var,long_var[-1]+dlon)
+  long_var_loc = long_var_loc[::-1]
+  long_var_loc = append(long_var_loc,long_var[0]-dlon)
+  long_var_loc = long_var_loc[::-1]
+
+  var_interp = zeros((ntime,nheight,nlat,nlong))
   for itime in range(ntime):
     for iheight in range(nheight):
       for ilat in range(nlat):
-        ploc = p[itime,iheight,ilat,:]
-        ploc = append(ploc,ploc[0])
-        ploc = ploc[::-1]
-        ploc = append(ploc,ploc[0])
-        ploc = ploc[::-1]
-        
-        p_interp[itime,iheight,ilat,:] = linear_interp_1d(long_p,long_var,ploc)
-                
-  if verbose:
-    print 'Interpolated pressure on variable longitude grid'
-   
-  return p_interp
+        # First extend dimension assuming periodic boundaries
+        varloc = var[itime,iheight,ilat,:]
+        varloc = append(varloc,varloc[0])
+        varloc = varloc[::-1]
+        varloc = append(varloc,varloc[0])
+        varloc = varloc[::-1]
+        var_interp[itime,iheight,ilat,:] = linear_interp_1d(long_var_loc,long_p,varloc)
 
+  if verbose:
+    print 'Interpolated variable onto pressure grid'
+   
+  return var_interp
+
+# Function to interpolate variable onto pressure latitude grid
 def interpolate_latitude(ntime,nheight,nlat,nlon,nlat_p,lat_p,lat_var,p,var):
   
   var_interp = zeros((ntime,nheight,nlat_p,nlon))
@@ -311,9 +314,8 @@ def interpolate_latitude(ntime,nheight,nlat,nlon,nlat_p,lat_p,lat_var,p,var):
         var_interp[itime,iheight,:,ilon] = linear_interp_1d(lat_var,lat_p,var[itime,iheight,:,ilon])
   
   if verbose:
-    print 'Interpolated pressure on variable latitude grid'
+    print 'Interpolated variable onto pressure latitude grid'
   
-  print var_interp.shape
   return var_interp
 
 # Function to interpolate in 2D 
@@ -362,13 +364,10 @@ def check_variable_pressure_grid(ntime,nlon,nlat,nheight,time_var,height_var,lon
 		print 'variable points: ', lon_var.size, 'pressure points: ',lon_p.size 
 		print 'interpolating variable onto pressure grid'
 		var = interpolate_longitude(ntime,nheight,nlat,nlon,lon_p,lon_var,p,var)
-		#p = interpolate_longitude(ntime_p,nheight_p,nlat_p,nlong_p,long_var,long_p,var,p)
 	elif (lon_p!=lon_var).any():
 		print 'Variable and pressure longitude grids have same number of points but do not match'
 		print 'interpolating variable onto pressure grid'
 		var = interpolate_longitude(ntime,nheight,nlat,nlon,lon_p,lon_var,p,var)
-		#p = interpolate_longitude(ntime_p,nheight_p,nlat_p,nlong_p,long_var,long_p,var,p)
-
 	# Check latitude
 	if lat_p.size != lat_var.size:
 		print 'Variable and pressure latitude grids do not have same number of points'	
@@ -379,5 +378,4 @@ def check_variable_pressure_grid(ntime,nlon,nlat,nheight,time_var,height_var,lon
 		print 'Variable and pressure latitude grids have same number of points but do not match'
 		print 'interpolating variable onto pressure grid'
 		var = interpolate_latitude(ntime,nheight,nlat,nlon,lat_p,lat_var,p,var)
-		#p = interpolate_latitude(ntime_p,nheight_p,nlat_p,nlong_p,nlat,lat_var,lat_p,var,p)
 	return var
