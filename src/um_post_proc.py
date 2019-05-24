@@ -411,7 +411,10 @@ def plot_2d(x,y,z,cmap,vmin,vmax,cbar_label,plot_type):
     pcm = pcolormesh(x,y,z,cmap=cmap,vmin=vmin,vmax=vmax,linewidth=0,rasterized=True)
 
   # Add colorbar
-  cb = colorbar(pcm,extend='both')
+  if plot_type=='linear':
+    cb = colorbar(pcm,extend='both',format='%1.2e')
+  else:
+    cb = colorbar(pcm,extend='both')
   cb.set_label(cbar_label,fontsize=20)
 
 def plot_contour(x,y,z,cont_min,cont_max,ncont,scale,color,linewidth):

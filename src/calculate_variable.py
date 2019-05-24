@@ -100,6 +100,14 @@ def calculate_variable(fname,fname_keys,fname_spec,varname,time_1,time_2,lon,lat
     x, y, var = construct_variable_2d(fname,fname_keys,fname_spec,varname,time_1,time_2,lon,lat_min,lat_max,
     level,plot_type,pressure_grid,vardim,instrument,nband)
 
+  # H mole fraction
+  elif varname=='h_mole_fraction':
+    if verbose:
+      print 'Requested variable is H mole fraction'
+    x, y, var = construct_variable_2d(fname,fname_keys,fname_spec,varname,time_1,time_2,lon,lat_min,lat_max,
+    level,plot_type,pressure_grid,vardim,instrument,nband)
+
+
   # Longwave heating rate in [W/m3]
   elif varname=='lwhr_wm3':
     if verbose:
