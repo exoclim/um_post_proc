@@ -1,5 +1,6 @@
 from construct_variable import *
-from calculate_variable import *
+from calculate_variable_1d import *
+from calculate_variable_2d import *
 from save_var import *
 from pylab import *
 from matplotlib.mlab import bivariate_normal
@@ -8,56 +9,41 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import os
 
-# Function to read or calculate requested 2d variable
+# Main function to read and post-process a variable for requested plot type - 2D version
 def get_variable_2d(save_dir,fname,fname_keys,fname_spec,fname_save,varname,read_saved_var,save_var,time_1,time_2,lon,lat_min,lat_max,plevel,plot_type,pressure_grid,vardim,instrument,nband):
 
-	# Read variable from saved file
+	# Read variable from saved file if it exists
 	if read_saved_var and os.path.isfile(save_dir+'saved_vars/'+fname_save+'_'+varname):
-		y, x, var = read_saved_var_2d(save_dir,fname_save+'_'+varname)
-
+	  y, x, var = read_saved_var_2d(save_dir,fname_save+'_'+varname)
+	# Otherwise calculate the variable from scratch
 	else:
-		
-		# Construct variable
-		x, y, var = calculate_variable(fname,fname_keys,fname_spec,varname,time_1,time_2,lon,lat_min,lat_max,plevel,plot_type,pressure_grid,vardim,instrument,nband)
-		
-		# Save variable
-		if save_var:
-			save_var_2d(save_dir,fname_save+'_'+varname,x,y,var)
+	  # Construct variable
+	  x, y, var = calculate_variable_2d(fname,fname_keys,fname_spec,varname,time_1,time_2,lon,lat_min,lat_max,plevel,plot_type,pressure_grid,vardim,instrument,nband)
+	  # Save the variable for later use
+	  if save_var:
+	    save_var_2d(save_dir,fname_save+'_'+varname,x,y,var)
 
 	return x, y, var
 	
-# Function to read and/or calculate requested 1d variable
+# Main function to read and post-process a variable for requested plot type - 1D version
 def get_variable_1d(save_dir,fname,fname_keys,fname_spec,fname_save,varname,read_saved_var,save_var,time_1,time_2,lat_min,lat_max,lon_min,lon_max,plot_type,pressure_grid,vardim,instrument,nband):
 	
-	# Read variable from saved file
-	if read_saved_var and os.path.isfile(save_dir+fname_save):
-		y, var = read_saved_var_1d(save_dir,fname_save)
-		
+	# Read variable from saved file if it exists
+	if read_saved_var and os.path.isfile(save_dir+'saved_vars/'+fname_save+'_'+varname):
+	  if plot_type=='multicolumn':
+	    y, lat_min, lon_min, var = read_saved_var_3d(save_dir,fname_save+'_'+varname)
+	  else:
+	    y, var = read_saved_var_1d(save_dir,fname_save+'_'+varname)
+	#Otherwise calculate variable from scratch
 	else:
-	  y, var = construct_variable_1d(fname,fname_keys,fname_spec,varname,time_1,time_2,lat_min,lat_max,lon_min,lon_max,plot_type,pressure_grid,vardim,instrument,nband)
-	  
-	  # Save
+	  y, var = calculate_variable_1d(fname,fname_keys,fname_spec,varname,time_1,time_2,lat_min,lat_max,lon_min,lon_max,plot_type,pressure_grid,vardim,instrument,nband)	  
+	  # Save the variable for later use
 	  if save_var:
-	    save_var_1d(save_dir,fname_save,y,var)
-	 
+	    if plot_type=='multicolumn':
+	      save_var_3d(save_dir,fname_save+'_'+varname,y,asarray(lat_min),asarray(lon_min),var)
+	    else:
+	      save_var_1d(save_dir,fname_save+'_'+varname,y,var)
 	return y, var
-	
-def get_variable_multi_1d(save_dir,fname,fname_keys,fname_spec,fname_save,varname,read_saved_var,save_var,time_1,time_2,lat,lon,plot_type,pressure_grid,vardim,instrument,nband):
-	
-	# Read variable from saved file
-	if read_saved_var and os.path.isfile(save_dir+fname_save):
-		p, lat, lon, var = read_saved_var_3d(save_dir,fname_save)
-		nlat = lat.size
-		nlon = lon.size
-	else:
-		# Construct variable
-		nlon, nlat, y, var = construct_variable_multi_1d(fname,fname_keys,fname_spec,varname,time_1,time_2,lat,lon,plot_type,pressure_grid,vardim,instrument,nband)
-
-		# Save
-		if save_var:
-			save_var_3d(save_dir,fname_save,y,asarray(lat),asarray(lon),var)
-	
-	return nlat, nlon, y, var
 
 def get_wind_vectors(save_dir,fname,fname_keys,fname_spec,fname_save,varname,read_saved_var,save_var,time_1,time_2,lon,lat_min,lat_max,plevel,plot_type,pressure_grid,vardim,instrument,nband):
 
@@ -82,7 +68,6 @@ def get_wind_vectors(save_dir,fname,fname_keys,fname_spec,fname_save,varname,rea
     sys.exit()
     
   # Interpolate
-  print ynew
   xnew = linspace(amin(x1),amax(x2),12)
   u = linear_interp_2d(x1,xnew,y1,ynew,u)
   v = linear_interp_2d(x2,xnew,y2,ynew,v)
@@ -101,7 +86,7 @@ nband=None,
 time_1=None,time_2=None,level=None,lat_min=None,lat_max=None,lon=None,
 pressure_grid=True,
 # Plotting variables
-vmin=None,vmax=None,color_map=True,cmap='Blues',smooth=False,smooth_log=False,smooth_factor=1,cbar_label='',cbar_type='',
+vmin=None,vmax=None,color_map=True,cmap='Blues',smooth=False,smooth_log=False,smooth_factor=1,cbar_label='',cbar_type='',ncmap=None,
 # Contour variables
 contours=False,ncont=5,cont_scale='linear',cont_colour=['black'],cont_linewidth=[1],cont_min=None,cont_max=None,
 # Wind vectors
@@ -122,7 +107,7 @@ showfig=False,save_fig=False,fname_save='um_post_proc',plot_title=None,read_save
 
   # Plot
   plot_variable_2d(y,x,var,plot_type,smooth,smooth_factor,smooth_log,vmin,vmax,cont_min,cont_max,
-  color_map,cmap,cbar_label,cbar_type,contours,ncont,cont_scale,cont_colour,cont_linewidth,
+  color_map,cmap,ncmap,cbar_label,cbar_type,contours,ncont,cont_scale,cont_colour,cont_linewidth,
   ymin,ymax,pressure_grid)
   
   if wind_vectors:
@@ -155,7 +140,7 @@ fname_spec='',
 instrument=None,
 nband=None,
 # Plotting variables
-vmin=None,vmax=None,color_map=True,cmap='Blues',smooth=False,smooth_log=False,smooth_factor=1,cbar_label='',cbar_type='',
+vmin=None,vmax=None,color_map=True,cmap='Blues',smooth=False,smooth_log=False,smooth_factor=1,cbar_label='',cbar_type='',ncmap=None,
 # Contour variables
 contours=False,ncont=5,cont_scale='linear',cont_colour=['black'],cont_linewidth=[1],cont_min=None,cont_max=None,
 # Plot parameters
@@ -205,7 +190,7 @@ rel_diff=False,showfig=False,save_fig=False,fname_save='um_post_proc',plot_title
   
   # Plot
   plot_variable_2d(y,x,var,plot_type,smooth,smooth_factor,smooth_log,vmin,vmax,cont_min,cont_max,
-  color_map,cmap,cbar_label,cbar_type,contours,ncont,cont_scale,cont_colour,cont_linewidth,
+  color_map,cmap,ncmap,cbar_label,cbar_type,contours,ncont,cont_scale,cont_colour,cont_linewidth,
   ymin,ymax,pressure_grid)
   
   # Save figure as pdf
@@ -220,7 +205,7 @@ rel_diff=False,showfig=False,save_fig=False,fname_save='um_post_proc',plot_title
 
 # Function to plot 2d variable
 def plot_variable_2d(y,x,var,plot_type,smooth,smooth_factor,smooth_log,vmin,vmax,cont_min,cont_max,
-color_map,cmap,cbar_label,cbar_type,contours,ncont,cont_scale,cont_colour,cont_linewidth,ymin,ymax,pressure_grid):
+color_map,cmap,ncmap,cbar_label,cbar_type,contours,ncont,cont_scale,cont_colour,cont_linewidth,ymin,ymax,pressure_grid):
 
 	# Smoothing
 	if smooth:
@@ -241,6 +226,7 @@ color_map,cmap,cbar_label,cbar_type,contours,ncont,cont_scale,cont_colour,cont_l
 
 	# Plot
 	if color_map:
+          cmap = get_cmap(cmap,ncmap)
 	  plot_2d(x,y,var,cmap,vmin,vmax,cbar_label,cbar_type)
 
 	# Add contours
@@ -335,42 +321,15 @@ showfig=False,save_fig=False,fname_save='um_post_proc',plot_title='',read_saved_
   # Get variable
   y, var = get_variable_1d(save_dir,fname,fname_keys,fname_spec,fname_save,varname,read_saved_var,save_var,time_1,time_2,lat_min,lat_max,lon_min,lon_max,plot_type,pressure_grid,vardim,instrument,nband)
 
-  # Plot
-  plot_variable_1d(y,var,
-  color,alpha,linewidth,linestyle,label,log_x,log_y,xmin,xmax,ymin,ymax,xlab,pressure_grid)
-  
-  # Save figure as pdf
-  if save_fig:
-    savefig(save_dir+fname_save+save_ext)
-    if verbose:
-      print 'Saved figure at: ',save_dir+fname_save+'.pdf'
-  
-  # Show figure on screen
-  if showfig:
-    show()
-
-def plot_um_multi_1d(fname,fname_keys,varname,plot_type,
-# Dimension variables
-time_1=None,time_2=None,lon=None,lat=None,
-pressure_grid=True,
-vardim=4,
-fname_spec=None,
-instrument=None,
-nband=None,
-# Plotting variables
-color='black',alpha=1.,linewidth=1,linestyle='-',label='',log_x=False,log_y=False,xmin=None,xmax=None,ymin=None,ymax=None,xlab='',
-# Parameters
-showfig=False,save_fig=False,fname_save='um_post_proc',plot_title='',read_saved_var=False,save_var=False,save_dir='',save_ext='.png'):
-
-  # Get variable
-  nlon, nlat, y, var = get_variable_multi_1d(save_dir,fname,fname_keys,fname_spec,fname_save,varname,read_saved_var,save_var,time_1,time_2,lat,lon,plot_type,pressure_grid,vardim,instrument,nband)
-
-  # Plot
-  for ilat in range(nlat):
-    for ilon in range(nlon):
-      plot_variable_1d(y,var[:,ilat,ilon],
-      color,alpha,linewidth,linestyle,label,log_x,log_y,xmin,xmax,ymin,ymax,xlab,pressure_grid)
-      
+  # If multiple columns loop over latitude and longitude points
+  if plot_type=='multicolumn':
+    for ilat in range(len(lat_min)):
+      for ilon in range(len(lon_min)):
+        plot_variable_1d(y,var[:,ilat,ilon],
+        color,alpha,linewidth,linestyle,label,log_x,log_y,xmin,xmax,ymin,ymax,xlab,pressure_grid)
+  else: 
+    plot_variable_1d(y,var,
+    color,alpha,linewidth,linestyle,label,log_x,log_y,xmin,xmax,ymin,ymax,xlab,pressure_grid)
   
   # Save figure as pdf
   if save_fig:
@@ -412,9 +371,10 @@ def plot_2d(x,y,z,cmap,vmin,vmax,cbar_label,plot_type):
 
   # Add colorbar
   if plot_type=='linear':
-    cb = colorbar(pcm,extend='both',format='%1.2e')
+    cb = colorbar(pcm,extend='neither',format='%1.2e')
   else:
-    cb = colorbar(pcm,extend='both')
+    cb = colorbar(pcm,extend='neither')
+  cb.ax.minorticks_on()
   cb.set_label(cbar_label,fontsize=20)
 
 def plot_contour(x,y,z,cont_min,cont_max,ncont,scale,color,linewidth):
@@ -426,7 +386,7 @@ def plot_contour(x,y,z,cont_min,cont_max,ncont,scale,color,linewidth):
   if scale == 'linear':
     dcon = (cont_max-cont_min)/ncont
     con_levels = linspace(cont_min+dcon,cont_max-dcon,ncont)
-    cont_fmt = '%1.1f'
+    cont_fmt = '%1.1e'
   elif scale == 'linear_log_label':
     dcon = (cont_max-cont_min)/ncont
     con_levels = linspace(cont_min+dcon,cont_max-dcon,ncont)
@@ -443,7 +403,7 @@ def plot_contour(x,y,z,cont_min,cont_max,ncont,scale,color,linewidth):
   cr = contour(x,y,z,con_levels,colors=color,linewidths=linewidth)
 
   # Plot contour labels
-  clabel(cr,inline=True,fmt=cont_fmt,fontsize=12,use_clabeltext=True,)
+  clabel(cr,inline=True,fmt=cont_fmt,fontsize=9,use_clabeltext=True,)
 
 # Function to smooth 2d data with logarithm 
 def smooth_2d_xlinear_ylog(x,y,z,smooth_factor,smooth_log):

@@ -7,18 +7,20 @@ from spectral import *
 # Control function 2D plots
 def construct_variable_2d(fname,fname_keys,fname_spec,varname,time_1,time_2,lon_request,lat_min,lat_max,level,plot_type,pressure_grid,vardim,instrument,nband):
 
-  # Get which variable to read from netcdf file
-  # varread = get_variable_to_read(varname)
+  # Read netcdf keys file
   varread = read_netcdf_keys(fname_keys,varname)
 
-  # Read variable
+  # Read variable 
   if vardim == 4:
+    # Standard 4-dimensional variable (time, height, lat, lon)
     t, z, lon, lat, var = read_variable_4d(fname,varread)
   else:
+    # 5-dimensional variable (time, height, lat, lon, band)
     t, z, lon, lat, band, var = read_variable_5d(fname,varread,nband)
+    # Do spectral post-processing first
     var = process_spectral(t,z,lat,lon,band,var,fname_spec,instrument)
 
-  # Select which method to use to post process variable
+  # Select plot type
   # Compute a zonal temporal mean
   if plot_type=='zonal_temporal_mean':
     x, y, var = zonal_temporal_mean(fname,varname,t,z,lat,lon,var,time_1,time_2,plot_type,pressure_grid)
@@ -65,7 +67,7 @@ def construct_variable_2d(fname,fname_keys,fname_spec,varname,time_1,time_2,lon_
     x, y, var = surface_temporal_mean(fname,varname,t,z,lat,lon,var,time_1,time_2,plot_type)
 
   else:
-    print 'Error: get_variable_2d'
+    print 'Error: construct_variable_2d'
     print '  plot_type',plot_type,'not implemented'
     sys.exit()
 
@@ -74,55 +76,65 @@ def construct_variable_2d(fname,fname_keys,fname_spec,varname,time_1,time_2,lon_
 # Control function 1D plots	
 def construct_variable_1d(fname,fname_keys,fname_spec,varname,time_1,time_2,lat_min,lat_max,lon_min,lon_max,plot_type,pressure_grid,vardim,instrument,nband):
 
-	# Get which variable to read from netcdf file
-	#varread = get_variable_to_read(varname)
-	varread = read_netcdf_keys(fname_keys,varname)
+  # Read netcdf keys file
+  varread = read_netcdf_keys(fname_keys,varname)
 
-        # Read variable (assumes it is a 4D variable)
-        if vardim == 4:
-          t, z, lon, lat, var = read_variable_4d(fname,varread)
-        else:
-          t, z, lon, lat, band, var = read_variable_5d(fname,varread,nband)
-          var = process_spectral(t,z,lat,lon,band,var,fname_spec,instrument)
+  # Read variable 
+  if vardim == 4:
+    # Standard 4-dimensional variable (time, height, lat, lon)
+    t, z, lon, lat, var = read_variable_4d(fname,varread)
+  else:
+    # 5-dimensional variable (time, height, lat, lon, band)
+    t, z, lon, lat, band, var = read_variable_5d(fname,varread,nband)
+    # Do spectral post-processing first
+    var = process_spectral(t,z,lat,lon,band,var,fname_spec,instrument)
 
+  # Select plot type
+  if plot_type=='area_average' or plot_type=='dayside_average' or plot_type=='nightside_average':
+    y, var = area_average(fname,varname,t,z,lat,lon,var,time_1,lat_min,lat_max,lon_min,lon_max,plot_type,pressure_grid)
 
-	# Select which method to use to post process variabl
-	if plot_type=='area_average' or plot_type=='dayside_average' or plot_type=='nightside_average':
-		y, var = area_average(fname,varname,t,z,lat,lon,var,time_1,lat_min,lat_max,lon_min,lon_max,plot_type,pressure_grid)
-	elif plot_type=='dayside_average_temporal_mean' or plot_type=='nightside_average_temporal_mean':
-		y, var = area_average_temporal_mean(fname,varname,t,z,lat,lon,var,time_1,time_2,lat_min,lat_max,lon_min,lon_max,plot_type,pressure_grid)
-	elif plot_type=='column':
-		y, var = extract_column(fname,varname,t,z,lat,lon,var,time_1,lat_min,lon_min,plot_type,pressure_grid)
-	else:
-		print 'Error: get_variable_1d'
-		print '  plot_type',plot_type,'not implemented'
-		sys.exit()
+  elif plot_type=='dayside_average_temporal_mean' or plot_type=='nightside_average_temporal_mean':
+    y, var = area_average_temporal_mean(fname,varname,t,z,lat,lon,var,time_1,time_2,lat_min,lat_max,lon_min,lon_max,plot_type,pressure_grid)
+
+  elif plot_type=='column':
+    y, var = extract_column(fname,varname,t,z,lat,lon,var,time_1,lat_min,lon_min,plot_type,pressure_grid)
+    
+  elif plot_type=='multicolumn':
+    y, var = extract_column_multi(fname,varname,t,z,lat,lon,var,time_1,lat_min,lon_min,plot_type,pressure_grid)
+
+  elif plot_type=='plon_dispersion':
+    y, var = plon_dispersion(fname,varname,t,z,lat,lon,var,time_1,lat_min,plot_type)
+
+  else:
+    print 'Error: construct_variable_1d'
+    print '  plot_type',plot_type,'not implemented'
+    sys.exit()
+
+  return y, var
 	
-	return y, var
-	
-def construct_variable_multi_1d(fname,fname_keys,fname_spec,varname,time_1,time_2,lat_request,lon_request,plot_type,pressure_grid,vardim,instrument,nband):
-
-	# Get which variable to read from netcdf file
-	#varread = get_variable_to_read(varname)
-	varread = read_netcdf_keys(fname_keys,varname)
-
-        # Read variable (assumes it is a 4D variable)
-        if vardim == 4:
-          t, z, lon, lat, var = read_variable_4d(fname,varread)
-        else:
-          t, z, lon, lat, band, var = read_variable_5d(fname,varread,nband)
-          var = process_spectral(t,z,lat,lon,band,var,fname_spec,instrument)
-
-	# Select which method to use to post process variable
-	if plot_type=='column':
-		nlon, nlat, p, var = extract_column_multi(fname,varname,t,z,lat,lon,var,time_1,time_2,lat_request,lon_request,plot_type,pressure_grid)
-	
-	else:
-		print 'Error: get_variable_multi_1d'
-		print '  plot_type',plot_type,'not implemented'
-		sys.exit()
-		
-	return nlon,nlat,p,var
+# def construct_variable_multi_1d(fname,fname_keys,fname_spec,varname,time_1,time_2,lat_request,lon_request,plot_type,pressure_grid,vardim,instrument,nband):
+# 
+# 	# Get which variable to read from netcdf file
+# 	#varread = get_variable_to_read(varname)
+# 	varread = read_netcdf_keys(fname_keys,varname)
+# 
+# 		# Read variable (assumes it is a 4D variable)
+# 		if vardim == 4:
+# 		  t, z, lon, lat, var = read_variable_4d(fname,varread)
+# 		else:
+# 		  t, z, lon, lat, band, var = read_variable_5d(fname,varread,nband)
+# 		  var = process_spectral(t,z,lat,lon,band,var,fname_spec,instrument)
+# 
+# 	# Select which method to use to post process variable
+# 	if plot_type=='column':
+# 		nlon, nlat, p, var = extract_column_multi(fname,varname,t,z,lat,lon,var,time_1,time_2,lat_request,lon_request,plot_type,pressure_grid)
+#    
+# 	else:
+# 		print 'Error: get_variable_multi_1d'
+# 		print '  plot_type',plot_type,'not implemented'
+# 		sys.exit()
+# 	   
+# 	return nlon,nlat,p,var
 
 # Create zonal temporal mean
 def zonal_temporal_mean(fname,varname,time_var,height_var,lat_var,lon_var,var,time_1,time_2,plot_type,pressure_grid):
@@ -497,7 +509,7 @@ def area_average_temporal_mean(fname,varname,time_var,height_var,lat_var,lon_var
 	return vert_coord, var
 
 # Create multiple columns
-def extract_column_multi(fname,varname,time_var,height_var,lat_var,lon_var,var,time_1,time_2,lat_request,lon_request,plot_type,pressure_grid):
+def extract_column_multi(fname,varname,time_var,height_var,lat_var,lon_var,var,time_1,lat_request,lon_request,plot_type,pressure_grid):
 
   if verbose:
     print 'Getting time averaged variable at requested latitude/longitude points'
@@ -526,5 +538,26 @@ def extract_column_multi(fname,varname,time_var,height_var,lat_var,lon_var,var,t
   #var = post_process_control(varname,var_at_point,vert_coord,plot_type)
   var = var_at_point
 
-  return nlat, nlon, vert_coord, var
+  return vert_coord, var
+
+# Dispersion of variable as a function of pressure and longitude
+def plon_dispersion(fname,varname,time_var,height_var,lat_var,lon_var,var,time_1,lat_request,plot_type):
+
+  # Interpolate variable onto presure grid
+  p, lat, lon, var = interpolate_on_p_profile(time_var,height_var,lat_var,lon_var,var,time_1,fname)
+
+  # Get variable near requested latitude
+  index = argmin(abs(lat-lat_request))
+  var = var[:,index,:]
+  if verbose:
+    print 'Routine: plon_dispersion'
+    print '  Getting variable at latitude: ',lat[index]
+
+  # Get maximum and minimum values at each vertical level
+  array = zeros((p.size,2))
+  for i in range(p.size):
+    array[i,0] = min(var[i,:])
+    array[i,1] = max(var[i,:])
+
+  return p, array
 

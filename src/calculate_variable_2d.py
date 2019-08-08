@@ -6,7 +6,7 @@ from constant_user import *
 # ---------------------------------------------
 # Main function to calculate requested variable
 # ---------------------------------------------
-def calculate_variable(fname,fname_keys,fname_spec,varname,time_1,time_2,lon,lat_min,lat_max,
+def calculate_variable_2d(fname,fname_keys,fname_spec,varname,time_1,time_2,lon,lat_min,lat_max,
   level,plot_type,pressure_grid,vardim,instrument,nband):
 
   # Zonal wind
