@@ -86,26 +86,16 @@ clf()
 lat = [0.]
 lon = linspace(0.,360,15)
 
-fig, ax = plt.subplots()
+for j,l in enumerate(lon):
+  plot_um_1d(fname=fname,fname_keys=fname_keys,varname='ch4_mole_fraction',plot_type='column',
+    time_1=time,lon_min=[l],lat_min=lat,
+    color='black',linestyle='-',
+    log_x=True,log_y=True,xlab='Mole Fraction',
+    showfig=showfig,save_fig=False,save_var=save_var,read_saved_var=read_saved_var,save_ext=save_ext,save_dir=save_dir,
+    fname_save='CH4_mole_fraction_equator_'+str(l))
+savefig(save_dir+'CH4_mole_fraction_equator.pdf')
+clf()
 
-# Equilibrium
-# CH4
-plot_um_multi_1d(fname=fname,fname_keys=fname_keys,varname='ch4_mole_fraction',plot_type='column',
-  time_1=1000,lon=lon,lat=lat,
-  color='grey',linestyle='--',
-  log_x=True,log_y=True,xlab='Mole Fraction',
-  showfig=showfig,save_fig=True,save_var=save_var,read_saved_var=read_saved_var,save_ext=save_ext,save_dir=save_dir,
-  fname_save='ch4_equator')
-clf()
-# Equilibrium
-# CH4
-plot_um_multi_1d(fname=fname,fname_keys=fname_keys,varname='ch4_mole_fraction',plot_type='column',
-  time_1=1000,lon=lon,lat=lat,pressure_grid=False,
-  color='grey',linestyle='--',
-  log_x=True,log_y=False,xlab='Mole Fraction',
-  showfig=showfig,save_fig=True,save_var=save_var,read_saved_var=read_saved_var,save_ext=save_ext,save_dir=save_dir,
-  fname_save='ch4_equator_altitude')
-clf()
 #Dayside and nightside average temperature
 plot_um_1d(fname=fname,fname_keys=fname_keys,varname='temp',plot_type='dayside_average_temporal_mean',
   time_1 = time_1, time_2=time_2,
