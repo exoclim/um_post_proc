@@ -143,6 +143,27 @@ def calculate_variable_2d(fname,fname_keys,fname_spec,varname,time_1,time_2,lon,
     x, y, var =  get_cf(fname,fname_keys,fname_spec,varname,time_1,time_2,lon,lat_min,lat_max,
     level,plot_type,pressure_grid,vardim,instrument,nband)
 
+  #Zonal advective timescale
+  elif varname=='u_timescale':
+    if verbose:
+      print 'Requested variable is zonal advective timescale'
+    x, y, var =  get_u_timescale(fname,fname_keys,fname_spec,varname,time_1,time_2,lon,lat_min,lat_max,
+    level,plot_type,pressure_grid,vardim,instrument,nband)
+
+  #Meridional advective timescale
+  elif varname=='v_timescale':
+    if verbose:
+      print 'Requested variable is meridional advective timescale'
+    x, y, var =  get_v_timescale(fname,fname_keys,fname_spec,varname,time_1,time_2,lon,lat_min,lat_max,
+    level,plot_type,pressure_grid,vardim,instrument,nband)
+
+  #Vertical advective timescale
+  elif varname=='w_timescale':
+    if verbose:
+      print 'Requested variable is vertical advective timescale'
+    x, y, var =  get_w_timescale(fname,fname_keys,fname_spec,varname,time_1,time_2,lon,lat_min,lat_max,
+    level,plot_type,pressure_grid,vardim,instrument,nband)
+
   else:
     print 'Error: calculate_variable'
     print 'variable not implemented: ',varname
@@ -283,4 +304,57 @@ def get_cf(fname,fname_keys,fname_spec,varname,time_1,time_2,lon_request,lat_min
 
   return x, y, var
 
+# ---------------------------------------------
+# Function to calculate zonal advective timescale
+# ---------------------------------------------
 
+def get_u_timescale(fname,fname_keys,fname_spec,varname,time_1,time_2,lon_request,lat_min,lat_max,
+  level,plot_type,pressure_grid,vardim,instrument,nband):
+
+  # Read meridional wind
+  x, y, var = construct_variable_2d(fname,fname_keys,fname_spec,'u',time_1,time_2,lon_request,lat_min,lat_max,
+    level,plot_type,pressure_grid,vardim,instrument,nband)
+
+  # Calculate timescale
+  var = 2.*pi*Rp/abs(var)
+
+  return x, y, var
+
+# ---------------------------------------------
+# Function to calculate meridional advective timescale
+# ---------------------------------------------
+
+def get_v_timescale(fname,fname_keys,fname_spec,varname,time_1,time_2,lon_request,lat_min,lat_max,
+  level,plot_type,pressure_grid,vardim,instrument,nband):
+
+  # Read meridional wind
+  x, y, var = construct_variable_2d(fname,fname_keys,fname_spec,'v',time_1,time_2,lon_request,lat_min,lat_max,
+    level,plot_type,pressure_grid,vardim,instrument,nband)
+
+  # Calculate timescale
+  var = pi*Rp/abs(var)/2.
+
+  return x, y, var
+
+# ---------------------------------------------
+# Function to calculate vertical advective timescale
+# ---------------------------------------------
+
+def get_w_timescale(fname,fname_keys,fname_spec,varname,time_1,time_2,lon_request,lat_min,lat_max,
+  level,plot_type,pressure_grid,vardim,instrument,nband):
+
+  # Read vertical wind
+  x, y, w = construct_variable_2d(fname,fname_keys,fname_spec,'w',time_1,time_2,lon_request,lat_min,lat_max,
+    level,plot_type,pressure_grid,vardim,instrument,nband)
+
+  #Get temperature
+  x, y, temp = construct_variable_2d(fname,fname_keys,fname_spec,'temp',time_1,time_2,lon_request,lat_min,lat_max,
+  level,plot_type,pressure_grid,vardim,instrument,nband)
+
+  # Calculate scale height
+  H = kb*temp/(mu*amu*surf_gravity)
+
+  # Calculate timescale
+  var = H/abs(w)
+
+  return x, y, var
