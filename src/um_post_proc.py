@@ -7,6 +7,7 @@ from matplotlib.mlab import bivariate_normal
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
+from matplotlib.ticker import LogFormatter 
 import os
 
 # Main function to read and post-process a variable for requested plot type - 2D version
@@ -86,7 +87,7 @@ nband=None,
 time_1=None,time_2=None,level=None,lat_min=None,lat_max=None,lon=None,
 pressure_grid=True,
 # Plotting variables
-vmin=None,vmax=None,color_map=True,cmap='Blues',smooth=False,smooth_log=False,smooth_factor=1,cbar_label='',cbar_type='',ncmap=None,
+vmin=None,vmax=None,color_map=True,cmap='Blues',smooth=False,smooth_log=False,smooth_factor=1,cbar_label='',cbar_type='',ncmap=None,cb_ticks=None,
 # Contour variables
 contours=False,ncont=5,cont_scale='linear',cont_colour=['black'],cont_linewidth=[1],cont_min=None,cont_max=None,
 # Wind vectors
@@ -108,7 +109,7 @@ showfig=False,save_fig=False,fname_save='um_post_proc',plot_title=None,read_save
   # Plot
   plot_variable_2d(y,x,var,plot_type,smooth,smooth_factor,smooth_log,vmin,vmax,cont_min,cont_max,
   color_map,cmap,ncmap,cbar_label,cbar_type,contours,ncont,cont_scale,cont_colour,cont_linewidth,
-  ymin,ymax,pressure_grid)
+  ymin,ymax,pressure_grid,cb_ticks)
   
   if wind_vectors:
     # Plot wind vectors
@@ -118,7 +119,10 @@ showfig=False,save_fig=False,fname_save='um_post_proc',plot_title=None,read_save
   
   if plot_title!=None:
     title(plot_title,fontsize=20)
-  
+ 
+  # ADjust size of figure
+  plt.tight_layout()
+ 
   # Save figure as pdf
   if save_fig:
     savefig(save_dir+fname_save+save_ext)
@@ -140,7 +144,7 @@ fname_spec='',
 instrument=None,
 nband=None,
 # Plotting variables
-vmin=None,vmax=None,color_map=True,cmap='Blues',smooth=False,smooth_log=False,smooth_factor=1,cbar_label='',cbar_type='',ncmap=None,
+vmin=None,vmax=None,color_map=True,cmap='Blues',smooth=False,smooth_log=False,smooth_factor=1,cbar_label='',cbar_type='',ncmap=None,cb_ticks=None,
 # Contour variables
 contours=False,ncont=5,cont_scale='linear',cont_colour=['black'],cont_linewidth=[1],cont_min=None,cont_max=None,
 # Plot parameters
@@ -191,7 +195,7 @@ rel_diff=False,showfig=False,save_fig=False,fname_save='um_post_proc',plot_title
   # Plot
   plot_variable_2d(y,x,var,plot_type,smooth,smooth_factor,smooth_log,vmin,vmax,cont_min,cont_max,
   color_map,cmap,ncmap,cbar_label,cbar_type,contours,ncont,cont_scale,cont_colour,cont_linewidth,
-  ymin,ymax,pressure_grid)
+  ymin,ymax,pressure_grid,cb_ticks)
   
   # Save figure as pdf
   if save_fig:
@@ -205,7 +209,7 @@ rel_diff=False,showfig=False,save_fig=False,fname_save='um_post_proc',plot_title
 
 # Function to plot 2d variable
 def plot_variable_2d(y,x,var,plot_type,smooth,smooth_factor,smooth_log,vmin,vmax,cont_min,cont_max,
-color_map,cmap,ncmap,cbar_label,cbar_type,contours,ncont,cont_scale,cont_colour,cont_linewidth,ymin,ymax,pressure_grid):
+color_map,cmap,ncmap,cbar_label,cbar_type,contours,ncont,cont_scale,cont_colour,cont_linewidth,ymin,ymax,pressure_grid,cb_ticks):
 
 	# Smoothing
 	if smooth:
@@ -227,7 +231,7 @@ color_map,cmap,ncmap,cbar_label,cbar_type,contours,ncont,cont_scale,cont_colour,
 	# Plot
 	if color_map:
           cmap = get_cmap(cmap,ncmap)
-	  plot_2d(x,y,var,cmap,vmin,vmax,cbar_label,cbar_type)
+	  plot_2d(x,y,var,cmap,vmin,vmax,cbar_label,cbar_type,cb_ticks)
 
 	# Add contours
 	if contours:
@@ -250,6 +254,10 @@ color_map,cmap,ncmap,cbar_label,cbar_type,contours,ncont,cont_scale,cont_colour,
 		ax.yaxis.set_major_locator(majorLocator)
 		ax.yaxis.set_major_formatter(matplotlib.ticker.ScalarFormatter())
 		
+        # Set tick font size
+        plt.xticks(fontsize=17)
+        plt.yticks(fontsize=17)
+
 	# Overide ylimit
 	if ymin!=None and ymax!=None:
 	  ylim(ymin,ymax)
@@ -289,19 +297,23 @@ def plot_variable_1d(y,var,color,alpha,linewidth,linestyle,label,log_x,log_y,xmi
 
 	# Plot
 	plot_1d(var,y,color,alpha,linestyle,linewidth,label,log_y)
+
+        # Set tick font size
+        plt.xticks(fontsize=17)
+        plt.yticks(fontsize=17)
 	
 	# Set axes - assume pressure for y axis
 	ylim(ymax,ymin)
 	if pressure_grid:
 	
-	  ylabel('Pressure [Pa]',fontsize=20)
+	  ylabel('Pressure [Pa]',fontsize=25)
 	else:
-	  ylabel('Altitude',fontsize=20)
+	  ylabel('Altitude',fontsize=25)
 	if log_y:
 	  yscale('log')
 	
 	xlim(xmin,xmax)
-	xlabel(xlab,fontsize=20)
+	xlabel(xlab,fontsize=25)
 	if log_x:
 	  xscale('log')
 
@@ -331,6 +343,9 @@ showfig=False,save_fig=False,fname_save='um_post_proc',plot_title='',read_saved_
     plot_variable_1d(y,var,
     color,alpha,linewidth,linestyle,label,log_x,log_y,xmin,xmax,ymin,ymax,xlab,pressure_grid)
   
+  # Adjust size of figure
+  plt.tight_layout()
+
   # Save figure as pdf
   if save_fig:
     savefig(save_dir+fname_save+save_ext)
@@ -352,7 +367,7 @@ def plot_1d(x,y,color,alpha,linestyle,linewidth,label,log_y):
   if log_y:
     yscale('log')
 
-def plot_2d(x,y,z,cmap,vmin,vmax,cbar_label,plot_type):
+def plot_2d(x,y,z,cmap,vmin,vmax,cbar_label,plot_type,cb_ticks):
 
   if verbose:
     print 'Plotting variable'
@@ -372,10 +387,17 @@ def plot_2d(x,y,z,cmap,vmin,vmax,cbar_label,plot_type):
   # Add colorbar
   if plot_type=='linear':
     cb = colorbar(pcm,extend='neither',format='%1.2e')
+    #cb.ax.minorticks_on()
+  elif plot_type=='log':
+    if cb_ticks==None:
+      cb = colorbar(pcm, extend='neither')
+    else:
+      #formatter = LogFormatter(10, labelOnlyBase=False)
+      cb = colorbar(pcm, extend='neither', ticks=cb_ticks, format='%1.2e')
   else:
     cb = colorbar(pcm,extend='neither')
-  cb.ax.minorticks_on()
-  cb.set_label(cbar_label,fontsize=20)
+  cb.set_label(cbar_label,fontsize=25)
+  cb.ax.tick_params(labelsize=16) 
 
 def plot_contour(x,y,z,cont_min,cont_max,ncont,scale,color,linewidth):
 
@@ -403,7 +425,7 @@ def plot_contour(x,y,z,cont_min,cont_max,ncont,scale,color,linewidth):
   cr = contour(x,y,z,con_levels,colors=color,linewidths=linewidth)
 
   # Plot contour labels
-  clabel(cr,inline=True,fmt=cont_fmt,fontsize=9,use_clabeltext=True,)
+  clabel(cr,inline=True,fmt=cont_fmt,fontsize=12,use_clabeltext=True,)
 
 # Function to smooth 2d data with logarithm 
 def smooth_2d_xlinear_ylog(x,y,z,smooth_factor,smooth_log):
